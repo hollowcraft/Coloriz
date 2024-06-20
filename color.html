@@ -141,7 +141,14 @@
         transform: rotate(90deg);
     }
 }
+    /* Styles pour déplacer les carrés après le dernier essai */
+    //.move-left {
+    //    transform: translateX(-50%);
+    //}
 
+    //.move-right {
+    //    transform: translateX(50%);
+    //}
 </style>
 </head>
 <body>
@@ -180,7 +187,7 @@
 
     // Fonction pour générer une couleur aléatoire
     function generateRandomColor() {
-        return [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
+        return [Math.floor(Math.random() * 206)+50, Math.floor(Math.random() * 206)+50, Math.floor(Math.random() * 206)-50];
     }
 
     // Fonction pour afficher la couleur générée
@@ -308,8 +315,19 @@
                     <p>Couleur générée finale en Hex: ${generatedColorHex}</p>
                 `;
                 document.getElementById('result-text').innerHTML = resultHTML;
+            setTimeout(() => {
+                // Déplacer les carrés vers les colonnes appropriées
+                document.getElementById('color-box').classList.add('move-left');
+                document.getElementById('user-color-box').classList.add('move-right');
+            }, 100); // Temps en millisecondes pour laisser le temps aux éléments HTML de se mettre à jour
                 // Afficher le carré bleu
                 document.getElementById('blue-square').style.display = 'block';
+	document.getElementById('r-slider').value = generatedColor[0];
+        document.getElementById('g-slider').value = generatedColor[1];
+        document.getElementById('b-slider').value = generatedColor[2];
+        document.getElementById('r-value').value = generatedColor[0];
+        document.getElementById('g-value').value = generatedColor[1];
+        document.getElementById('b-value').value = generatedColor[2];
             }
         }
     });
@@ -344,6 +362,7 @@
         document.getElementById('r-value').value = 0;
         document.getElementById('g-value').value = 0;
         document.getElementById('b-value').value = 0;
+
 
         // Réinitialiser la couleur de la boîte de l'utilisateur et cacher le carré bleu
         document.getElementById('user-color-box').style.backgroundColor = 'rgb(0, 0, 0)';
