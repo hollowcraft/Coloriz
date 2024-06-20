@@ -205,12 +205,16 @@
     document.getElementById('blue-square').style.display = 'none';
         document.getElementById('red-square').style.display = 'none';
         document.getElementById('green-square').style.display = 'none';
-        
+
     let generatedColor;
     let attemptCount = 0;
     const maxAttempts = 3;
     let totalScore = 0;
     let attemptResults = [];
+    let AttemptColorA;
+    let AttemptColorB;
+    let AttemptColorC;
+
 
     // Fonction pour générer une couleur aléatoire
     function generateRandomColor() {
@@ -332,8 +336,16 @@
             const userColorBox = document.getElementById('user-color-box');
             userColorBox.style.backgroundColor = 'rgb(' + userColor.join(',') + ')';
 
+            if (attemptCount === 1) {
+            document.getElementById('blue-square').style.backgroundColor = 'rgb(' + userColor.join(',') + ')'
+        }
+        if (attemptCount === 2) {
+            document.getElementById('red-square').style.backgroundColor = 'rgb(' + userColor.join(',') + ')'
+        }
+
             // Si c'est le dernier essai, afficher les résultats
             if (attemptCount === maxAttempts) {
+                document.getElementById('green-square').style.backgroundColor = 'rgb(' + userColor.join(',') + ')'
                 document.getElementById('check-btn').disabled = true;
                 let resultHTML = '';
                 attemptResults.forEach(result => {
@@ -417,4 +429,5 @@
 </script>
 </body>
 </html>
+
 
