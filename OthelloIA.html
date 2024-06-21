@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Othello</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #board {
+            display: grid;
+            grid-template: repeat(8, 50px) / repeat(8, 50px);
+            gap: 1px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: green;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .black {
+            background-color: black;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+        .white {
+            background-color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+        #scores {
+            display: flex;
+            justify-content: space-around;
+            width: 200px;
+        }
+        .score {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="board"></div>
+    <div id="scores">
+        <div class="score">Noir: <span id="black-score">2</span></div>
+        <div class="score">Blanc: <span id="white-score">2</span></div>
+    </div>
+    <script>
+        const board = document.getElementById('board');
+        const blackScoreElement = document.getElementById('black-score');
+        const whiteScoreElement = document.getElementById('white-score');
+        const size = 8;
+        let currentPlayer = 'black';
+
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],        [0, 1],
+            [1, -1], [1, 0], [1, 1]
+        ];
+
+        function createBoard() {
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.addEventListener('click', handleClick);
+                    board.appendChild(cell);
+                }
+            }
+            placeInitialDisks();
+        }
+
+        function placeInitialDisks() {
+            placeDisk(3, 3, 'white');
+            placeDisk(3, 4, 'black');
+            placeDisk(4, 3, 'black');
+            placeDisk(4, 4, 'white');
+            updateScores();
+        }
+
+        function placeDisk(row, col, color) {
+            const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+            const disk = document.createElement('div');
+            disk.classList.add(color);
+            cell.appendChild(disk);
+        }
+
+        function handleClick(event) {
+            const cell = event.target;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            if (cell.children.length === 0 && isValidMove(row, col, currentPlayer)) {
+                placeDisk(row, col, currentPlayer);
+                flipDisks(row, col, currentPlayer);
+                updateScores();
+                currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+
+                // After player's move, AI makes its move after a short delay
+                setTimeout(makeAIMove, 500);
+            }
+        }
+
+        function isValidMove(row, col, player) {
+            for (const [dx, dy] of directions) {
+                if (capturesInDirection(row, col, dx, dy, player)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function capturesInDirection(row, col, dx, dy, player) {
+            let x = row + dx;
+            let y = col + dy;
+            let hasOpponent = false;
+
+            while (x >= 0 && x < size && y >= 0 && y < size) {
+                const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+                if (cell.children.length === 0) {
+                    return false;
+                }
+
+                const disk = cell.children[0];
+                if (disk.classList.contains(player)) {
+                    return hasOpponent;
+                } else {
+                    hasOpponent = true;
+                }
+
+                x += dx;
+                y += dy;
+            }
+
+            return false;
+        }
+
+        function flipDisks(row, col, player) {
+            for (const [dx, dy] of directions) {
+                if (capturesInDirection(row, col, dx, dy, player)) {
+                    let x = row + dx;
+                    let y = col + dy;
+
+                    while (x >= 0 && x < size && y >= 0 && y < size) {
+                        const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+                        const disk = cell.children[0];
+
+                        if (disk.classList.contains(player)) {
+                            break;
+                        }
+
+                        disk.classList.remove('black', 'white');
+                        disk.classList.add(player);
+
+                        x += dx;
+                        y += dy;
+                    }
+                }
+            }
+        }
+
+        function updateScores() {
+            const blackDisks = document.querySelectorAll('.black').length;
+            const whiteDisks = document.querySelectorAll('.white').length;
+            blackScoreElement.textContent = blackDisks;
+            whiteScoreElement.textContent = whiteDisks;
+        }
+
+        function makeAIMove() {
+            let bestMove = null;
+            let maxFlips = -1;
+
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (document.querySelector(`.cell[data-row='${i}'][data-col='${j}']`).children.length === 0 && isValidMove(i, j, 'white')) {
+                        const flips = countFlips(i, j, 'white');
+                        if (flips > maxFlips) {
+                            maxFlips = flips;
+                            bestMove = { row: i, col: j };
+                        }
+                    }
+                }
+            }
+
+            if (bestMove) {
+                placeDisk(bestMove.row, bestMove.col, 'white');
+                flipDisks(bestMove.row, bestMove.col, 'white');
+                updateScores();
+                currentPlayer = 'black';
+            }
+        }
+
+        function countFlips(row, col, player) {
+            let flips = 0;
+            for (const [dx, dy] of directions) {
+                let x = row + dx;
+                let y = col + dy;
+                let tempFlips = 0;
+                while (x >= 0 && x < size && y >= 0 && y < size) {
+                    const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+                    if (cell.children.length === 0) {
+                        break;
+                    }
+                    const disk = cell.children[0];
+                    if (disk.classList.contains(player)) {
+                        flips += tempFlips;
+                        break;
+                    } else {
+                        tempFlips++;
+                    }
+                    x += dx;
+                    y += dy;
+                }
+            }
+            return flips;
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
