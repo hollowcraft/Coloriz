@@ -18,19 +18,20 @@
         height: 100vh;
     }
     #color-box, #user-color-box, #final-color-box {
-        width: 200px;
-        height: 200px;
-        margin: 20px auto;
-        border: 0px solid black;
-        background-color: rgb(255, 255, 255);
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease-in-out;
-    }
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+    border: 0px solid black;
+    background-color: rgb(255, 255, 255);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
     .color-box:hover {
-        opacity: 1;
-        transform: scale(1.1);
-    }
+    opacity: 1;
+    transform: scale(1.1);
+}
+
     .slider-container {
         display: flex;
         align-items: center;
@@ -38,38 +39,40 @@
         margin: 10px 0;
     }
     .color-slider {
-        width: 150px;
-        height: 15px;
-        -webkit-appearance: none;
-        appearance: none;
-        border-radius: 5px;
-        outline: none;
-        opacity: 0.8;
-        transition: opacity .2s, transform 0.2s ease-in-out;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+    width: 150px;
+    height: 15px;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.8;
+    transition: opacity .2s, transform 0.2s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
     .color-slider:hover {
-        opacity: 1;
-        transform: scale(1.1);
-    }
+    opacity: 1;
+    transform: scale(1.1);
+}
     .color-slider::-webkit-slider-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 100%;
-        background: #fff;
-        cursor: pointer;
-        -webkit-appearance: none;
-        appearance: none;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-    }
-    .color-slider::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #fff;
-        cursor: pointer;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-    }
+    width: 20px;
+    height: 20px;
+    border-radius: 100%; /* Bord arrondi */
+    background: #fff;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.color-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%; /* Bord arrondi */
+    background: #fff;
+    cursor: pointer;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
     #r-slider {
         background: linear-gradient(to right, black, red);
     }
@@ -80,33 +83,33 @@
         background: linear-gradient(to right, black, blue);
     }
     #check-btn, #reset-btn {
-        margin: 10px;
-        padding: 10px 20px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease-in-out;
-        font-size: 16px;
-        border-radius: 5px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    font-size: 16px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
     #check-btn {
         background-color: #4CAF50;
         color: white;
     }
-    #check-btn:hover {
-        background-color: #45a049;
-        transform: scale(1.05);
-        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-    }
+#check-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
     #reset-btn {
         background-color: #f44336;
         color: white;
     }
     #reset-btn:hover {
-        background-color: #e53935;
-        transform: scale(1.05);
-        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-    }
+    background-color: #e53935;
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
     #check-btn:disabled {
         background-color: #ccc;
         cursor: not-allowed;
@@ -114,105 +117,107 @@
     #result-text p {
         margin: 5px 0;
     }
-    #dark-btn {
-        background-color: #f44336;
-        color: white;
-        margin: 10px;
-        padding: 10px 20px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease-in-out;
-        font-size: 16px;
-        border-radius: 5px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    #dark-btn:hover {
-        background-color: #e53935;
-        transform: scale(1.05);
-        box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-    }
     .slider-value {
         width: 50px;
         margin-left: 10px;
     }
     #color-squares {
         position: fixed;
-        right: 20px;
+        right: 20px; /* Distance par rapport au bord droit */
         top: 50%;
-        transform: translateY(-50%);
+        transform: translateY(-50%); /* Pour centrer verticalement */
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 10px; /* Espacement entre les carrés */
     }
+
     #blue-square, #red-square, #green-square {
         width: 50px;
         height: 50px;
         border-radius: 10px;
         margin: -10px auto;
-        display: none;
+        display: none; /* Les carrés sont cachés par défaut */
     }
+
+/* Styles spécifiques pour les couleurs */
     #blue-square {
         background-color: rgb(0, 0, 255);
     }
+
     #red-square {
         background-color: rgb(255, 0, 0);
     }
+
     #green-square {
         background-color: rgb(0, 255, 0);
     }
+
+    #color-squares {
+    position: fixed;
+    right: 20px; /* Distance par rapport au bord droit */
+    top: 50%;
+    transform: translateY(-50%); /* Pour centrer verticalement */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Espacement entre les carrés */
+}
+/* Styles spécifiques pour les couleurs */
+
+#color-squares {
+    position: fixed;
+    right: 20px; /* Distance par rapport au bord droit */
+    top: 50%;
+    transform: translateY(-50%); /* Pour centrer verticalement */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px; /* Espacement entre les carrés */
+}
+
+#blue-square, #red-square, #green-square {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    margin: -10px auto;
+    display: none; /* Les carrés sont cachés par défaut */
+}
+
+/* Styles spécifiques pour les couleurs */
+#blue-square {
+    background-color: rgb(0, 0, 255);
+}
+
+#red-square {
+    background-color: rgb(255, 0, 0);
+}
+
+#green-square {
+    background-color: rgb(0, 255, 0);
+}
+
+
     .rotate {
         animation: rotateSquare 0.2s ease-in-out;
     }
-    @keyframes rotateSquare {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(90deg);
-        }
+
+@keyframes rotateSquare {
+    0% {
+        transform: rotate(0deg);
     }
+    100% {
+        transform: rotate(90deg);
+    }
+}
+    /*Styles pour déplacer les carrés après le dernier essai */
     .move-left {
         transform: translateX(-50%);
     }
+
     .move-right {
         transform: translateX(50%);
-    }
-    /* Dark Mode Styles */
-    body.dark-mode {
-        background-color: #121212;
-        color: #ffffff;
-    }
-    body.dark-mode #color-box,
-    body.dark-mode #user-color-box,
-    body.dark-mode #final-color-box {
-        background-color: rgb(30, 30, 30);
-        box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2), 0 6px 20px rgba(255, 255, 255, 0.1);
-    }
-    body.dark-mode #check-btn {
-        background-color: #3b3b3b;
-        color: white;
-    }
-    body.dark-mode #reset-btn {
-        background-color: #8b0000;
-        color: white;
-    }
-    body.dark-mode .color-slider::-webkit-slider-thumb,
-    body.dark-mode .color-slider::-moz-range-thumb {
-        background: #ffffff;
-        box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
-    }
-    body.dark-mode .color-slider {
-        box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
-    }
-    body.dark-mode .slider-container label {
-        color: #ffffff;
-    }
-    body.dark-mode input[type="number"] {
-        background-color: #3b3b3b;
-        color: #ffffff;
-        border: 1px solid #ffffff;
-    }
+    } 
 </style>
 </head>
 <body>
@@ -245,7 +250,6 @@
     <div id="red-square"></div>
     <div id="green-square"></div>
 </div>
-<button id="dark-btn">Dark Mode</button>
 
 
 <script>
@@ -262,10 +266,6 @@
     let AttemptColorB;
     let AttemptColorC;
 
-
-    document.getElementById('dark-mode-btn').addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-    });
 
     // Fonction pour générer une couleur aléatoire
     function generateRandomColor() {
@@ -344,7 +344,7 @@
             score *= 2;
         }
 
-        if (attemptCount === 2) {
+        if (attemptCount === 1) {
             document.getElementById('blue-square').style.display = 'block';
             setTimeout(() => {
                 // Déplacer les carrés vers les colonnes appropriées
@@ -478,6 +478,9 @@
         document.getElementById('blue-square').classList.add('move-right');
         document.getElementById('red-square').classList.add('move-right');
         document.getElementById('green-square').classList.add('move-right');
+	document.getElementById('blue-square').style.display = 'none';
+	document.getElementById('red-square').style.display = 'none';
+	document.getElementById('green-square').style.display = 'none';
     });
 
 //couleur que j'aime bien
