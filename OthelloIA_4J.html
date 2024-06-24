@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Othello</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+        #controls select, #controls input {
+            margin: 5px;
+        }
+        #board {
+            display: grid;
+            gap: 1px;
+            margin-bottom: 20px;
+        }
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: black;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+        .disk {
+            border-radius: 50%;
+            width: 37.5px;
+            height:37.5px;
+            transition: background-color 0.2s ease-in-out, transform 1s ease-in-out;
+            box-shadow: 0 6px 10px rgba(255, 255, 255, 0.2);
+            border: 2.5px solid black;
+            border-color: rgba(0, 0, 0, 0.4);;
+        }
+        .red { background-color: red; }
+        .yellow { background-color: yellow; }
+        .blue { background-color: blue; }
+        .green { background-color: green; }
+        #scores {
+            display: flex;
+            justify-content: space-around;
+            width: 400px;
+        }
+        .score {
+            font-size: 20px;
+        }
+        /* Classe pour l'animation de grossissement */
+    .disk-animate {
+        transform: scale(0.9); /* Taille lerement agrandie */
+        transition: transform 0.3s ease-out; /* Transition douce */
+
+    }
+    /*@keyframes dispDisk {
+        0% {
+            transform: scale(0.5);
+        }
+        85% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1.0);
+        }
+    }*/
+
+
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label for="human-players">Humains:</label>
+            <input type="number" id="human-players" value="1" min="0" max="4">
+        </select>
+        <label for="grid-size">Taille de la grille:</label>
+        <input type="number" id="grid-size" value="8" min="4" max="16">
+        <label for="starting-pattern">Motif de départ:</label>
+        <select id="starting-pattern">
+            <option value="pattern7">Classique2</option>
+            <option value="pattern1">Classique4</option>
+            <option value="pattern2">Mélangé4</option>
+            <option value="pattern3">Cl4+corner</option>
+            <option value="pattern8">Zig2</option>
+            <option value="pattern6">Zig4</option>
+            <option value="pattern4">1</option>
+            <option value="pattern5">2</option>
+            <option value="pattern9">3</option>
+        </select>
+        <label for="moves-per-turn">Coups par tour:</label>
+        <input type="number" id="moves-per-turn" value="1" min="1" max="3">
+        <button onclick="startGame()">Démarrer le jeu</button>
+    </div>
+    <div id="board"></div>
+    <div id="scores">
+        <div class="score">Rouge: <span id="red-score">0</span></div>
+        <div class="score">Jaune: <span id="yellow-score">0</span></div>
+        <div class="score">Bleu: <span id="blue-score">0</span></div>
+        <div class="score">Vert: <span id="green-score">0</span></div>
+    </div>
+    <script>
+        const board = document.getElementById('board');
+        const redScoreElement = document.getElementById('red-score');
+        const yellowScoreElement = document.getElementById('yellow-score');
+        const blueScoreElement = document.getElementById('blue-score');
+        const greenScoreElement = document.getElementById('green-score');
+        const players = ['red', 'yellow', 'blue', 'green'];
+        let gridSize = 8;
+        let humanPlayers = 1;
+        let aiPlayers = 0; // Ajout du nombre d'IA
+        let movesPerTurn = 1;
+        let startingPattern = 'pattern1';
+        let currentPlayerIndex = 0;
+        let currentPlayer = players[currentPlayerIndex];
+        let moveThisTurn = 0
+
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],        [0, 1],
+            [1, -1], [1, 0], [1, 1]
+        ];
+
+        function startGame() {
+            gridSize = parseInt(document.getElementById('grid-size').value);
+            humanPlayers = parseInt(document.getElementById('human-players').value);
+            movesPerTurn = parseInt(document.getElementById('moves-per-turn').value);
+            startingPattern = document.getElementById('starting-pattern').value;
+            currentPlayerIndex = 0;
+            currentPlayer = players[currentPlayerIndex];
+            board.innerHTML = '';
+            board.style.gridTemplate = `repeat(${gridSize}, 50px) / repeat(${gridSize}, 50px)`;
+            createBoard();
+        }
+
+        function flipDisks(row, col, player) {
+    for (const [dx, dy] of directions) {
+        if (capturesInDirection(row, col, dx, dy, player)) {
+            let x = row + dx;
+            let y = col + dy;
+
+            while (x >= 0 && x < size && y >= 0 && y < size) {
+                const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+                const disk = cell.children[0];
+
+                if (disk.classList.contains(player)) {
+                    break;
+                }
+
+                disk.classList.remove('red', 'yellow', 'blue', 'green');
+                disk.classList.add(player);
+                disk.classList.add('fade-out'); // Ajoute la classe d'animation
+
+                x += dx;
+                y += dy;
+            }
+        }
+    }
+}
+
+
+        function createBoard() {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.style.width = `${50}px`;
+                    cell.style.height = `${50}px`;
+                    cell.addEventListener('click', handleClick);
+                    board.appendChild(cell);
+                }
+            }
+            placeInitialDisks(startingPattern);
+        }
+        function placeInitialDisks(pattern) {  
+            const patterns = {
+                'pattern1': [
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['blue', 'blue', 'green', 'green'],
+                    ['blue', 'blue', 'green', 'green']
+                ],
+                'pattern2': [
+                    ['green', 'yellow', 'red', 'blue'],
+                    ['yellow', 'green', 'blue', 'red'],
+                    ['blue', 'red', 'yellow', 'green'],
+                    ['red', 'blue', 'green', 'yellow']
+                ],
+                'pattern3': [
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['blue', 'blue', 'green', 'green'],
+                    ['blue', 'blue', 'green', 'green']
+                ],
+                'pattern4': [
+                    ['yellow', 'red', 'blue', 'yellow'],
+                    ['red', 'blue', 'yellow', 'red'],
+                    ['blue', 'yellow', 'red', 'blue'],
+                    ['yellow', 'red', 'blue', 'yellow']
+                ],
+                'pattern5': [
+                    ['green', 'yellow', 'red', 'blue'],
+                    ['yellow', 'green', 'blue', 'red'],
+                    ['blue', 'red', 'yellow', 'green'],
+                    ['red', 'blue', 'green', 'yellow']
+                ],
+                'pattern6': [
+                    ['green', 'yellow', 'red', 'blue'],
+                    ['red', 'blue', 'green', 'yellow'],
+                    ['green', 'yellow', 'red', 'blue'],
+                    ['red', 'blue', 'green', 'yellow']
+                ],
+                'pattern7': [
+                    [''],
+                    ['', 'blue', 'red'],
+                    ['', 'red', 'blue']
+                ],
+                'pattern8': [
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['red', 'red', 'yellow', 'yellow'],
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['red', 'red', 'yellow', 'yellow']
+                ],
+                'pattern9': [
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['yellow', 'yellow', 'red', 'red'],
+                    ['blue', 'blue', 'green', 'green'],
+                    ['blue', 'blue', 'green', 'green']
+                ]
+            };
+
+            const selectedPattern = patterns[pattern];
+            const midRow = Math.floor(gridSize / 2) - 1;
+            const midCol = Math.floor(gridSize / 2) - 1;
+
+            for (let i = 0; i < selectedPattern.length; i++) {
+                for (let j = 0; j < selectedPattern[i].length; j++) {
+                    if (selectedPattern[i][j] !== '') {
+                        placeDisk(i+midRow-1, j+midCol-1, selectedPattern[i][j]);
+                    }
+                }
+            }
+            
+            if (pattern === 'pattern3') {
+                // Placer les coins restants au milieu de la grille
+                placeDisk(0, 0, 'yellow');
+                placeDisk(0, gridSize-1, 'red');
+                placeDisk(gridSize-1, 0, 'blue');
+                placeDisk(gridSize-1, gridSize-1, 'green');
+            }
+
+            updateScores();
+        }
+
+        function placeDisk(row, col, color) {
+            const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+            if (cell && cell.children.length === 0) {
+                const disk = document.createElement('div');
+                disk.classList.add('disk', color);
+                //disk.classlist.add('dispDisk');
+                cell.appendChild(disk);
+            }
+        }
+
+        function handleClick(event) {
+            if (currentPlayerIndex >= humanPlayers) return; // Seuls les joueurs humains peuvent cliquer
+            const cell = event.target;
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+
+            if (cell.children.length === 0 && isValidMove(row, col, currentPlayer)) {
+                for (let i = 0; i < movesPerTurn; i++) {
+                    if (isValidMove(row, col, currentPlayer)) {
+                        placeDisk(row, col, currentPlayer);
+                        flipDisks(row, col, currentPlayer);
+                    }
+                }
+                updateScores();
+                nextPlayer();
+            }
+        }
+
+        function isValidMove(row, col, player) {
+            for (const [dx, dy] of directions) {
+                if (capturesInDirection(row, col, dx, dy, player)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function hasValidMove(player) {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (document.querySelector(`.cell[data-row='${i}'][data-col='${j}']`).children.length === 0 && isValidMove(i, j, player)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function capturesInDirection(row, col, dx, dy, player) {
+    let x = row + dx;
+    let y = col + dy;
+    let hasOpponent = false;
+
+    while (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+        const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+        if (cell.children.length === 0) {
+            return false;
+        }
+
+        const disk = cell.children[0];
+        if (disk.classList.contains(player)) {
+            return hasOpponent;
+        } else {
+            hasOpponent = true;
+        }
+
+        x += dx;
+        y += dy;
+    }
+
+    return false;
+}
+
+function flipDisks(row, col, player) {
+    for (const [dx, dy] of directions) {
+        if (capturesInDirection(row, col, dx, dy, player)) {
+            let x = row + dx;
+            let y = col + dy;
+
+            while (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+                const disk = cell.children[0];
+
+                if (disk.classList.contains(player)) {
+                    break;
+                }
+
+                disk.classList.remove('red', 'yellow', 'blue', 'green');
+                disk.classList.add(player);
+                disk.classList.add('disk-animate');
+                setTimeout(() => {
+                    disk.classList.remove('disk-animate');
+                }, 300);
+
+                x += dx;
+                y += dy;
+            }
+        }
+    }
+}
+
+function updateScores() {
+    const scores = {
+        'red': 0,
+        'yellow': 0,
+        'blue': 0,
+        'green': 0
+    };
+
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            const cell = document.querySelector(`.cell[data-row='${i}'][data-col='${j}']`);
+            if (cell.children.length > 0) {
+                const disk = cell.children[0];
+                scores[disk.classList[1]]++;
+            }
+        }
+    }
+
+    redScoreElement.textContent = scores['red'];
+    yellowScoreElement.textContent = scores['yellow'];
+    blueScoreElement.textContent = scores['blue'];
+    greenScoreElement.textContent = scores['green'];
+}
+
+function nextPlayer() {
+    currentPlayerIndex = (currentPlayerIndex + 1) % 4;
+    currentPlayer = players[currentPlayerIndex];
+    if (currentPlayerIndex >= humanPlayers ) {
+        setTimeout(makeAIMove, 500);
+    }
+}
+
+function makeAIMove() {
+    let bestMove = null;
+    let maxDifference = -Infinity;
+
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            if (document.querySelector(`.cell[data-row='${i}'][data-col='${j}']`).children.length === 0 && isValidMove(i, j, currentPlayer)) {
+                const flips = countFlips(i, j, currentPlayer);
+                const opponentFlips = countOpponentFlips(i, j, currentPlayer);
+                const difference = flips - opponentFlips;
+                if (difference > maxDifference) {
+                    maxDifference = difference;
+                    bestMove = { row: i, col: j };
+                }
+            }
+        }
+    }
+
+    if (bestMove) {
+        for (let i = 0; i < movesPerTurn; i++) {
+            if (isValidMove(bestMove.row, bestMove.col, currentPlayer)) {
+                placeDisk(bestMove.row, bestMove.col, currentPlayer);
+                flipDisks(bestMove.row, bestMove.col, currentPlayer);
+            }
+        }
+        updateScores();
+        nextPlayer();
+    } else {
+        nextPlayer();
+    }
+}
+
+function countFlips(row, col, player) {
+    let flips = 0;
+    for (const [dx, dy] of directions) {
+        let x = row + dx;
+        let y = col + dy;
+        let tempFlips = 0;
+        while (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+            const cell = document.querySelector(`.cell[data-row='${x}'][data-col='${y}']`);
+            if (cell.children.length === 0) {
+                break;
+            }
+            const disk = cell.children[0];
+            if (disk.classList.contains(player)) {
+                flips += tempFlips;
+                break;
+            } else {
+                tempFlips++;
+            }
+            x += dx;
+            y += dy;
+        }
+    }
+    return flips;
+}
+
+function countOpponentFlips(row, col, player) {
+    let opponentFlips = 0;
+    for (const opponent of players) {
+        if (opponent !== player) {
+            opponentFlips += countFlips(row, col, opponent);
+        }
+    }
+    return opponentFlips;
+}
+
+        startGame();
+    </script>
+</body>
+</html>
