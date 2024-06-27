@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Celeste Clone</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background-color: #87CEEB;
+        }
+        #gameCanvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        const blockSize = 50;
+        const numBlocksX = Math.floor(canvas.width / blockSize);
+        const numBlocksY = Math.floor(canvas.height / blockSize);
+
+        const player = {
+            x: 0,
+            y: canvas.height - blockSize,
+            width: 30,
+            height: 30,
+            color: 'red',
+            speed: 5,
+            dy: 0,
+            gravity: 0.5,
+            jumpPower: 8,
+            dashPower: 10,
+            dashDuration: 100,
+            dashCooldown: 1000,
+            canDash: true,
+            isDashing: false,
+            dashDirection: { x: 0, y: 0 },
+            grounded: false,
+            numBlocks: 40
+        };
+
+        const spawnBlock = { x: 0, y: canvas.height - blockSize, width: blockSize, height: blockSize };
+        const endBlock = { x: (numBlocksX - 1) * blockSize, y: 0, width: blockSize, height: blockSize };
+
+        let platforms = [];
+        let spikes = [];
+
+        function generateRandomBlocks(numBlocks) {
+            const generatedPlatforms = [];
+            const generatedSpikes = [];
+            for (let i = 0; i < numBlocks; i++) {
+                const x = Math.floor(Math.random() * numBlocksX) * blockSize;
+                const y = Math.floor(Math.random() * numBlocksY) * blockSize;
+                const block = { x: x, y: y, width: blockSize, height: blockSize };
+                if (Math.random() < 0.33) {
+                    generatedSpikes.push(block);
+                } else {
+                    generatedPlatforms.push(block);
+                }
+            }
+            return { platforms: generatedPlatforms, spikes: generatedSpikes };
+        }
+
+        function resetTerrain() {
+            const { platforms: newPlatforms, spikes: newSpikes } = generateRandomBlocks(80);
+            platforms = newPlatforms;
+            spikes = newSpikes;
+            platforms.push(spawnBlock);
+            platforms.push(endBlock);
+        }
+
+        resetTerrain();
+
+        const keys = {
+            right: false,
+            left: false,
+            up: false,
+            down: false,
+            dash: false
+        };
+
+        let lastHorizontalDirection = 0; // 1 for right, -1 for left
+        let waveDashCooldown = 0;
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'd') {
+                keys.right = true;
+                lastHorizontalDirection = 1;
+            }
+            if (event.key === 'q') {
+                keys.left = true;
+                lastHorizontalDirection = -1;
+            }
+            if (event.key === 'z') keys.up = true;
+            if (event.key === 's') keys.down = true;
+            if (event.key === 'j' && player.grounded) {
+                player.dy = -player.jumpPower;
+                player.grounded = false;
+            }
+            if (event.key === 'k' && player.canDash && !player.isDashing) {
+                player.isDashing = true;
+                player.dashDirection = {
+                    x: (keys.right ? 1 : 0) - (keys.left ? 1 : 0) || lastHorizontalDirection,
+                    y: (keys.down ? 1 : 0) - (keys.up ? 1 : 0)
+                };
+                player.canDash = false;
+                setTimeout(() => player.isDashing = false, player.dashDuration);
+                setTimeout(() => player.canDash = true, player.dashCooldown);
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'd') keys.right = false;
+            if (event.key === 'q') keys.left = false;
+            if (event.key === 'z') keys.up = false;
+            if (event.key === 's') keys.down = false;
+            if (event.key === 'k') keys.dash = false;
+        });
+
+        function resetPlayer() {
+            player.x = spawnBlock.x;
+            player.y = spawnBlock.y - player.height;
+            player.dy = 0;
+            player.isDashing = false;
+            player.canDash = true;
+            player.dashDirection = { x: 0, y: 0 };
+            waveDashCooldown = 0;
+        }
+
+        function update() {
+            if (!player.isDashing) {
+                if (keys.right) player.x += player.speed;
+                if (keys.left) player.x -= player.speed;
+                player.dy += player.gravity;
+                player.y += player.dy;
+            } else {
+                player.x += player.dashPower * player.dashDirection.x;
+                player.y += player.dashPower * player.dashDirection.y;
+            }
+
+            platforms.forEach(platform => {
+                if (player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y < platform.y + platform.height &&
+                    player.y + player.height > platform.y) {
+                    if (player.isDashing && player.dashDirection.y > 0 && waveDashCooldown < 5) {
+                        player.dy = -player.jumpPower * 1.5; // Propel player up
+                        player.isDashing = false;
+                        player.canDash = true;
+                        waveDashCooldown = 5;
+                    } else {
+                        player.y = platform.y - player.height;
+                        player.dy = 0;
+                        player.grounded = true;
+                        player.canDash = true;
+                    }
+                }
+            });
+
+            spikes.forEach(spike => {
+                if (player.x < spike.x + spike.width &&
+                    player.x + player.width > spike.x &&
+                    player.y < spike.y + spike.height &&
+                    player.y + player.height > spike.y) {
+                    resetPlayer();
+                }
+            });
+
+            if (player.y + player.height >= canvas.height) {
+                player.y = canvas.height - player.height;
+                player.dy = 0;
+                player.grounded = true;
+            }
+
+            if (player.x < endBlock.x + endBlock.width &&
+                player.x + player.width > endBlock.x &&
+                player.y < endBlock.y + endBlock.height &&
+                player.y + player.height > endBlock.y) {
+                alert('Level Completed!');
+                resetPlayer();
+                resetTerrain();
+            }
+
+            if (waveDashCooldown > 0) waveDashCooldown--;
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            ctx.fillStyle = 'green';
+            platforms.forEach(platform => {
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+
+            ctx.fillStyle = 'black';
+            spikes.forEach(spike => {
+                ctx.fillRect(spike.x+5, spike.y+5, spike.width-10, spike.height-10);
+            });
+
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(spawnBlock.x, spawnBlock.y, spawnBlock.width, spawnBlock.height);
+
+            ctx.fillStyle = 'gold';
+            ctx.fillRect(endBlock.x, endBlock.y, endBlock.width, endBlock.height);
+        }
+
+        resetPlayer();
+        update();
+    </script>
+</body>
+</html>
