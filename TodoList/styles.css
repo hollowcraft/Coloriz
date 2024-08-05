@@ -1,0 +1,119 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 20px;
+    background-color: #282C34FF;
+    color: white;
+}
+h1, h2, h3 {
+    color: white;
+}
+.note, .folder, .task, .custom-task {
+    background-color: #009f504b;
+    
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    position: relative;
+}
+.note-title, .folder-title, .task-title, .custom-task-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.note-content, .task-details, .custom-task-content {
+    margin-bottom: 10px;
+}
+.note-date, .task-date, .custom-task-date {
+    font-size: 0.9em;
+    color: white;
+}
+.note-buttons, .folder-buttons, .task-buttons, .custom-task-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+.note-buttons button, .folder-buttons button, .task-buttons button, .custom-task-buttons button {
+    margin-left: 5px;
+}
+.folder-container {
+    margin-top: 20px;
+}
+.points-container {
+    margin-top: 20px;
+}
+.completeTaskButton, .icon-class {
+    background: none;
+    border: none;
+    padding: 0; 
+    cursor: pointer;
+    outline: none;
+}
+
+.completeTaskButton, .icon-class img {
+    display: block;
+}
+
+.button-image {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    width: 25px;
+    height: 25px;
+}
+
+.edit-button {
+    background-image: url('edit.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.delete-button {
+    background-image: url('delete.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.complete-button {
+    background-image: url('complete.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.delete-folder-button {
+    background-image: url('remove.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center -10px;
+}
+.task {
+    position: relative;
+    background-color: rgba(0, 119, 255, 0.63); /* Couleur de fond blanche avec opacité */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    color: white;
+    backdrop-filter: blur(5px); /* Appliquer un flou de 5px */
+    -webkit-backdrop-filter: blur(20px); /* Support Safari */
+
+    background-size: cover; /* Ajuste la taille de l'image pour couvrir l'élément */
+    background-position: center; /* Centre l'image */
+    background-repeat: no-repeat; /* Empêche la répétition de l'image */
+}
+
+.task-title, .task-details, .completeTaskButton, .learnTextDisplay {
+}
+
+.farewell {
+    background-image: url('Farewell.png'); /* Chemin vers l'image */
+    image: url('task.png');
+}
+
+.code{
+    background-image: url('Code.png'); /* Chemin vers l'image */
+}
