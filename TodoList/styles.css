@@ -9,10 +9,10 @@ h1, h2, h3 {
     color: white;
 }
 .note, .folder, .task, .custom-task {
-    background-color: #009f504b;
+    background-color: #00381ca1;
     
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    border: 5px solid #009f504b;
+    border-radius: 20px;
     padding: 10px;
     margin-bottom: 10px;
     position: relative;
@@ -92,9 +92,9 @@ h1, h2, h3 {
 }
 .task {
     position: relative;
-    background-color: rgba(0, 119, 255, 0.63); /* Couleur de fond blanche avec opacité */
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    background-color: #001e3fa1; /* Couleur de fond blanche avec opacité */
+    border: 5px solid #0077ffa1;
+    border-radius: 20px;
     padding: 10px;
     margin-bottom: 10px;
     color: white;
@@ -105,9 +105,9 @@ h1, h2, h3 {
     background-position: center; /* Centre l'image */
     background-repeat: no-repeat; /* Empêche la répétition de l'image */
 }
-
+/*
 .task-title, .task-details, .completeTaskButton, .learnTextDisplay {
-}
+}*/
 
 .farewell {
     background-image: url('Farewell.png'); /* Chemin vers l'image */
