@@ -1,4 +1,4 @@
-
+//salut
         let totalPoints = 0;
         let dailyPoints = 0;
 
