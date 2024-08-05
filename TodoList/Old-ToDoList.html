@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes, Dossiers et Tâches Journalières</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .note, .folder, .task, .custom-task {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .note-title, .folder-title, .task-title, .custom-task-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .note-content, .task-details, .custom-task-content {
+            margin-bottom: 10px;
+        }
+        .note-date, .task-date, .custom-task-date {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .note-buttons, .folder-buttons, .task-buttons, .custom-task-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .note-buttons button, .folder-buttons button, .task-buttons button, .custom-task-buttons button {
+            margin-left: 5px;
+        }
+        .folder-container {
+            margin-top: 20px;
+        }
+        .points-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mes Notes, Dossiers et Tâches Journalières</h1>
+    <div class="points-container">
+        <h3>Points : <span id="totalPoints">0</span></h3>
+    </div>
+    <form id="noteForm">
+        <input type="text" id="title" placeholder="Titre de la note" required>
+        <textarea id="content" placeholder="Contenu de la note" required></textarea>
+        <select id="folderSelect">
+            <option value="">Sans dossier</option>
+        </select>
+        <button type="submit">Ajouter la note</button>
+    </form>
+
+    <h2>Créer un dossier</h2>
+    <form id="folderForm">
+        <input type="text" id="folderName" placeholder="Nom du dossier" required>
+        <button type="submit">Créer le dossier</button>
+    </form>
+
+    <h2>Tâches journalières</h2>
+    <div id="dailyTasks">
+        <div class="task">
+            <div class="task-title">Faire 5min de montage</div>
+            <div class="task-details">Durée: 5min | Points: 20</div>
+            <button class="completeTaskButton" onclick="completeTask('Faire 5min de montage', 20)">Terminer</button>
+        </div>
+        <div class="task" id="task-apprendre">
+            <div class="task-title">Apprendre quelque chose</div>
+            <div class="task-details">Points: 10</div>
+            <input type="text" id="learnText" placeholder="Entrez votre texte ici">
+            <button onclick="saveLearnText()">Enregistrer</button>
+            <button onclick="displayLearnText()">Afficher le texte</button>
+            <button class="completeTaskButton" onclick="completeTask('Apprendre quelque chose', 10)">Terminer</button>
+            <div id="learnTextDisplay" style="margin-top: 10px; color: #333;"></div>
+        </div>
+    </div>
+
+    <h2>Ajouter une tâche personnalisée</h2>
+    <form id="customTaskForm">
+        <input type="text" id="customTask" placeholder="Description de la tâche" required>
+        <input type="number" id="customPoints" placeholder="Points" required min="1">
+        <button type="submit">Ajouter la tâche</button>
+    </form>
+    <div id="customTasksList" class="folder-container">
+        <!-- Les tâches personnalisées seront ajoutées ici -->
+    </div>
+
+    <div id="foldersList" class="folder-container">
+        <!-- Les dossiers et notes seront ajoutés ici -->
+    </div>
+
+    <script>
+        let totalPoints = 0;
+
+        // Charger les dossiers, notes et points du LocalStorage
+        function loadFolders() {
+            const folders = JSON.parse(localStorage.getItem('folders')) || [];
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            totalPoints = parseInt(localStorage.getItem('totalPoints')) || 0;
+            document.getElementById('totalPoints').textContent = totalPoints;
+            document.getElementById('foldersList').innerHTML = '';
+
+            // Ajouter l'option "Sans dossier" au sélecteur de dossiers
+            document.getElementById('folderSelect').innerHTML = '<option value="">Sans dossier</option>';
+            
+            folders.forEach((folder, folderIndex) => {
+                // Ajouter le dossier au sélecteur
+                const folderOption = document.createElement('option');
+                folderOption.value = folder.name;
+                folderOption.textContent = folder.name;
+                document.getElementById('folderSelect').appendChild(folderOption);
+
+                // Afficher le dossier
+                const folderElement = document.createElement('div');
+                folderElement.classList.add('folder');
+                
+                const folderTitle = document.createElement('div');
+                folderTitle.classList.add('folder-title');
+                folderTitle.textContent = folder.name;
+
+                // Boutons du dossier
+                const folderButtons = document.createElement('div');
+                folderButtons.classList.add('folder-buttons');
+                const deleteFolderButton = document.createElement('button');
+                deleteFolderButton.textContent = 'Supprimer';
+                deleteFolderButton.onclick = () => deleteFolder(folderIndex);
+
+                folderButtons.appendChild(deleteFolderButton);
+
+                folderElement.appendChild(folderTitle);
+                folderElement.appendChild(folderButtons);
+
+                // Conteneur pour les notes du dossier
+                const notesContainer = document.createElement('div');
+                notesContainer.classList.add('notes-container');
+
+                // Filtrer et afficher les notes du dossier
+                notes.filter(note => note.folder === folder.name).forEach((note, noteIndex) => {
+                    displayNote(note.title, note.content, note.date, noteIndex, folder.name, notesContainer);
+                });
+
+                folderElement.appendChild(notesContainer);
+                document.getElementById('foldersList').appendChild(folderElement);
+            });
+
+            // Afficher les notes sans dossier
+            const noFolderContainer = document.createElement('div');
+            noFolderContainer.classList.add('folder');
+            const noFolderTitle = document.createElement('div');
+            noFolderTitle.classList.add('folder-title');
+            noFolderTitle.textContent = 'Sans dossier';
+            const noFolderNotesContainer = document.createElement('div');
+            noFolderNotesContainer.classList.add('notes-container');
+
+            notes.filter(note => !note.folder).forEach((note, noteIndex) => {
+                displayNote(note.title, note.content, note.date, noteIndex, '', noFolderNotesContainer);
+            });
+
+            noFolderContainer.appendChild(noFolderTitle);
+            noFolderContainer.appendChild(noFolderNotesContainer);
+            document.getElementById('foldersList').appendChild(noFolderContainer);
+
+            // Charger les tâches personnalisées
+            loadCustomTasks();
+        }
+
+        // Fonction pour afficher une note
+        function displayNote(title, content, date, index, folder, container) {
+            const noteElement = document.createElement('div');
+            noteElement.classList.add('note');
+            
+            const noteTitle = document.createElement('div');
+            noteTitle.classList.add('note-title');
+            noteTitle.textContent = title;
+
+            const noteContent = document.createElement('div');
+            noteContent.classList.add('note-content');
+            noteContent.textContent = content;
+
+            const noteDate = document.createElement('div');
+            noteDate.classList.add('note-date');
+            noteDate.textContent = `Ajouté le ${date}`;
+
+            // Boutons Modifier et Supprimer
+            const noteButtons = document.createElement('div');
+            noteButtons.classList.add('note-buttons');
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Modifier';
+            editButton.onclick = () => editNote(index);
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Supprimer';
+            deleteButton.onclick = () => deleteNote(index);
+
+            noteButtons.appendChild(editButton);
+            noteButtons.appendChild(deleteButton);
+
+            noteElement.appendChild(noteTitle);
+            noteElement.appendChild(noteContent);
+            noteElement.appendChild(noteDate);
+            noteElement.appendChild(noteButtons);
+
+            container.appendChild(noteElement);
+        }
+
+        // Sauvegarder une note dans le LocalStorage
+        function saveNote(title, content, folder) {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const date = new Date().toLocaleString();
+            notes.push({ title, content, date, folder });
+            localStorage.setItem('notes', JSON.stringify(notes));
+            loadFolders();
+        }
+
+        // Supprimer une note
+        function deleteNote(index) {
+            let notes = JSON.parse(localStorage.getItem('notes')) || [];
+            notes.splice(index, 1);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            loadFolders();
+        }
+
+        // Modifier une note
+        function editNote(index) {
+            const notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const note = notes[index];
+            document.getElementById('title').value = note.title;
+            document.getElementById('content').value = note.content;
+            document.getElementById('folderSelect').value = note.folder || '';
+
+            // Mise à jour de l'événement de soumission pour mettre à jour la note
+            document.getElementById('noteForm').onsubmit = function(event) {
+                event.preventDefault();
+                notes[index].title = document.getElementById('title').value;
+                notes[index].content = document.getElementById('content').value;
+                notes[index].folder = document.getElementById('folderSelect').value;
+                notes[index].date = new Date().toLocaleString();
+                localStorage.setItem('notes', JSON.stringify(notes));
+                document.getElementById('noteForm').reset();
+                loadFolders();
+                document.getElementById('noteForm').onsubmit = addNote;
+            };
+        }
+
+        // Ajouter une nouvelle note
+        function addNote(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const folder = document.getElementById('folderSelect').value;
+            saveNote(title, content, folder);
+            document.getElementById('noteForm').reset();
+        }
+
+        // Créer un nouveau dossier
+        function createFolder(event) {
+            event.preventDefault();
+            const folderName = document.getElementById('folderName').value.trim();
+            if (folderName) {
+                const folders = JSON.parse(localStorage.getItem('folders')) || [];
+                if (!folders.find(folder => folder.name === folderName)) {
+                    folders.push({ name: folderName });
+                    localStorage.setItem('folders', JSON.stringify(folders));
+                    document.getElementById('folderForm').reset();
+                    loadFolders();
+                } else {
+                    alert('Ce nom de dossier existe déjà.');
+                }
+            }
+        }
+
+        // Supprimer un dossier
+        function deleteFolder(index) {
+            let folders = JSON.parse(localStorage.getItem('folders')) || [];
+            let notes = JSON.parse(localStorage.getItem('notes')) || [];
+            const folderToDelete = folders[index].name;
+
+            // Retirer les notes associées au dossier
+            notes = notes.map(note => note.folder === folderToDelete ? { ...note, folder: '' } : note);
+
+            // Supprimer le dossier
+            folders.splice(index, 1);
+            localStorage.setItem('folders', JSON.stringify(folders));
+            localStorage.setItem('notes', JSON.stringify(notes));
+            loadFolders();
+        }
+
+        // Compléter une tâche journalière
+        function completeTask(taskName, points) {
+            if (confirm(`Voulez-vous vraiment terminer la tâche "${taskName}" et gagner ${points} points ?`)) {
+                totalPoints += points;
+                localStorage.setItem('totalPoints', totalPoints);
+                document.getElementById('totalPoints').textContent = totalPoints;
+            }
+        }
+
+        // Ajouter une tâche personnalisée
+        function addCustomTask(event) {
+            event.preventDefault();
+            const customTask = document.getElementById('customTask').value;
+            const customPoints = parseInt(document.getElementById('customPoints').value, 10);
+            if (customTask && customPoints) {
+                const customTasks = JSON.parse(localStorage.getItem('customTasks')) || [];
+                customTasks.push({ task: customTask, points: customPoints });
+                localStorage.setItem('customTasks', JSON.stringify(customTasks));
+                document.getElementById('customTaskForm').reset();
+                loadCustomTasks();
+            }
+        }
+
+        // Charger et afficher les tâches personnalisées
+        function loadCustomTasks() {
+            const customTasks = JSON.parse(localStorage.getItem('customTasks')) || [];
+            const customTasksList = document.getElementById('customTasksList');
+            customTasksList.innerHTML = '';
+
+            customTasks.forEach((task, index) => {
+                const taskElement = document.createElement('div');
+                taskElement.classList.add('custom-task');
+                
+                const taskTitle = document.createElement('div');
+                taskTitle.classList.add('custom-task-title');
+                taskTitle.textContent = task.task;
+
+                const taskDetails = document.createElement('div');
+                taskDetails.classList.add('custom-task-content');
+                taskDetails.textContent = `Points: ${task.points}`;
+
+                // Bouton Terminer pour chaque tâche personnalisée
+                const taskButtons = document.createElement('div');
+                taskButtons.classList.add('custom-task-buttons');
+                const completeButton = document.createElement('button');
+                completeButton.textContent = 'Terminer';
+                completeButton.onclick = () => completeCustomTask(index, task.points);
+
+                taskButtons.appendChild(completeButton);
+
+                taskElement.appendChild(taskTitle);
+                taskElement.appendChild(taskDetails);
+                taskElement.appendChild(taskButtons);
+
+                customTasksList.appendChild(taskElement);
+            });
+        }
+
+        // Compléter une tâche personnalisée
+        function completeCustomTask(index, points) {
+            if (confirm(`Voulez-vous vraiment terminer cette tâche et gagner ${points} points ?`)) {
+                totalPoints += points;
+                localStorage.setItem('totalPoints', totalPoints);
+                document.getElementById('totalPoints').textContent = totalPoints;
+
+                // Supprimer la tâche personnalisée terminée
+                let customTasks = JSON.parse(localStorage.getItem('customTasks')) || [];
+                customTasks.splice(index, 1);
+                localStorage.setItem('customTasks', JSON.stringify(customTasks));
+                loadCustomTasks();
+            }
+        }
+
+        function displayLearnText() {
+            const learnText = localStorage.getItem('learnText') || 'Aucun texte enregistré.';
+            const textDisplayElement = document.getElementById('learnTextDisplay');
+            textDisplayElement.textContent = learnText;
+        }
+
+        function saveLearnText() {
+            // Récupérer le texte saisi par l'utilisateur
+            const learnText = document.getElementById('learnText').value.trim();
+        
+            // Vérifier si le texte n'est pas vide avant de le sauvegarder
+            if (learnText) {
+                localStorage.setItem('learnText', learnText);
+                alert('Texte sauvegardé !');
+            } else {
+                alert('Le champ de texte est vide. Veuillez entrer un texte avant de sauvegarder.');
+            }
+        }
+        
+        
+        // Charger le texte sauvegardé lors du chargement de la page
+        function loadLearnText() {
+            const savedText = localStorage.getItem('learnText');
+            if (savedText) {
+                document.getElementById('learnText').value = savedText;
+            }
+        }
+        
+        // Appel de la fonction lors du chargement de la page
+        document.addEventListener('DOMContentLoaded', (event) => {
+            loadFolders();
+            loadLearnText();
+        });
+        
+
+        document.getElementById('noteForm').onsubmit = addNote;
+        document.getElementById('folderForm').onsubmit = createFolder;
+        document.getElementById('customTaskForm').onsubmit = addCustomTask;
+
+        // Charger les dossiers, notes et tâches personnalisées au démarrage
+        loadFolders();
+    </script>
+</body>
+</html>
