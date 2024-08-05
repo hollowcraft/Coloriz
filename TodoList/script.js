@@ -214,14 +214,63 @@
         function completeTask(taskName, points) {
             if (confirm(`Voulez-vous vraiment terminer la tâche "${taskName}" et gagner ${points} points ?`)) {
                 totalPoints += points;
-                dailyPoints += points;
                 localStorage.setItem('totalPoints', totalPoints);
+        
+                // Ajouter les points quotidiens
+                addDailyPoints(points);
+        
+                // Mettre à jour l'affichage global des points
                 document.getElementById('totalPoints').textContent = totalPoints;
-
-                localStorage.setItem('totalPoints', dailyPoints);
-                document.getElementById('totalPoints').textContent = dailyPoints;
             }
         }
+        
+
+        // Fonction pour vérifier si les points doivent être réinitialisés
+function checkDailyReset() {
+    const today = new Date().toISOString().split('T')[0]; // Date au format YYYY-MM-DD
+    const lastResetDate = localStorage.getItem('lastResetDate');
+    
+    // Réinitialiser les points si la date de dernière réinitialisation n'est pas aujourd'hui
+    if (lastResetDate !== today) {
+        localStorage.removeItem('dailyPoints');
+        localStorage.setItem('lastResetDate', today);
+    }
+}
+
+// Fonction pour ajouter des points
+function addDailyPoints(points) {
+    checkDailyReset(); // Vérifier si une réinitialisation est nécessaire
+    
+    const today = new Date().toISOString().split('T')[0]; // Date au format YYYY-MM-DD
+    const dailyPoints = JSON.parse(localStorage.getItem('dailyPoints')) || {};
+    
+    // Ajouter ou mettre à jour les points pour aujourd'hui
+    dailyPoints[today] = (dailyPoints[today] || 0) + points;
+    localStorage.setItem('dailyPoints', JSON.stringify(dailyPoints));
+    
+    // Mettre à jour l'affichage des points
+    updateDailyPointsDisplay();
+}
+
+// Fonction pour obtenir les points gagnés aujourd'hui
+function getTodayPoints() {
+    const today = new Date().toISOString().split('T')[0];
+    const dailyPoints = JSON.parse(localStorage.getItem('dailyPoints')) || {};
+    return dailyPoints[today] || 0;
+}
+
+// Fonction pour afficher les points gagnés aujourd'hui
+function updateDailyPointsDisplay() {
+    document.getElementById('dailyPoints').textContent = `Points d'aujourd'hui : ${getTodayPoints()}`;
+}
+
+// Initialiser l'affichage des points au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+    checkDailyReset(); // Vérifier et réinitialiser les points si nécessaire
+    updateDailyPointsDisplay();
+});
+
+
 
         // Ajouter une tâche personnalisée
         function addCustomTask(event) {

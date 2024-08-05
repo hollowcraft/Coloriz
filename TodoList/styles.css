@@ -9,8 +9,7 @@ h1, h2, h3 {
     color: white;
 }
 .note, .folder, .task, .custom-task {
-    background-color: #00381ca1;
-    
+    background-color: #004030BA;
     border: 5px solid #009f504b;
     border-radius: 20px;
     padding: 10px;
@@ -90,10 +89,19 @@ h1, h2, h3 {
     background-repeat: no-repeat;
     background-position: center -10px;
 }
+
+.task-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Ajuste les colonnes automatiquement */
+    gap: 20px; /* Espacement entre les tâches */
+}
+
 .task {
+    /*width: 200px;  Largeur fixe 
+    height: 200px; Hauteur égale à la largeur pour obtenir une forme carrée */
     position: relative;
-    background-color: #001e3fa1; /* Couleur de fond blanche avec opacité */
-    border: 5px solid #0077ffa1;
+    background-color: #001E3FBA; /* Couleur de fond blanche avec opacité */
+    border: 5px solid #002EFF4B;
     border-radius: 20px;
     padding: 10px;
     margin-bottom: 10px;
@@ -106,14 +114,10 @@ h1, h2, h3 {
     background-repeat: no-repeat; /* Empêche la répétition de l'image */
 }
 /*
-.task-title, .task-details, .completeTaskButton, .learnTextDisplay {
-}*/
-
 .farewell {
-    background-image: url('Farewell.png'); /* Chemin vers l'image */
-    image: url('task.png');
+    background-image: url('Farewell.png');
 }
 
 .code{
-    background-image: url('Code.png'); /* Chemin vers l'image */
+    background-image: url('Code.png');
 }
