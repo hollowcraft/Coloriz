@@ -74,7 +74,7 @@
         }
 
         // Fonction pour afficher une note
-        function displayNote(title, content, date, index, folder, container, points = 10) {
+        function displayNote(title, content, date, index, folder, container, points = 40) {
             const noteElement = document.createElement('div');
             noteElement.classList.add('note');
             
@@ -260,7 +260,7 @@ function getTodayPoints() {
 
 // Fonction pour afficher les points gagnés aujourd'hui
 function updateDailyPointsDisplay() {
-    document.getElementById('dailyPoints').textContent = `Points d'aujourd'hui : ${getTodayPoints()}`;
+    document.getElementById('dailyPoints').textContent = `${getTodayPoints()}`;
 }
 
 // Initialiser l'affichage des points au chargement de la page

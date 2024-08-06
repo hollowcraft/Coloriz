@@ -2,7 +2,9 @@ body {
     font-family: Arial, sans-serif;
     margin: 20px;
     padding: 20px;
-    background-color: #282C34FF;
+    /*background-color: #282C34FF;*/
+    background:
+        linear-gradient(in lch, #282C34FF, #009f50);
     color: white;
 }
 h1, h2, h3 {
@@ -97,8 +99,8 @@ h1, h2, h3 {
 }
 
 .task {
-    /*width: 200px;  Largeur fixe 
-    height: 200px; Hauteur égale à la largeur pour obtenir une forme carrée */
+    /*width: 200px; 
+    height: 100px; */
     position: relative;
     background-color: #001E3FBA; /* Couleur de fond blanche avec opacité */
     border: 5px solid #002EFF4B;
