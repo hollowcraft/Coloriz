@@ -1,6 +1,11 @@
 def check_disarm(wires, index, serial_number):
     num_wires = len(wires)
-    last_digit_is_odd = int(serial_number[-1]) % 2 == 1
+    
+    # Vérifie si le dernier caractère est un chiffre, sinon par défaut le dernier chiffre est pair.
+    if serial_number[-1].isdigit():
+        last_digit_is_odd = int(serial_number[-1]) % 2 == 1
+    else:
+        last_digit_is_odd = False
 
     if num_wires == 3:
         # Règles pour 3 câbles
@@ -9,6 +14,7 @@ def check_disarm(wires, index, serial_number):
         elif wires[-1] == "blanc":
             return index == len(wires) - 1  # Couper le dernier câble
         elif wires.count("bleu") > 1:
+            # Trouver la position du dernier câble bleu
             last_blue = len(wires) - 1 - wires[::-1].index("bleu")
             return index == last_blue  # Couper le dernier câble bleu
         else:
@@ -50,5 +56,4 @@ def check_disarm(wires, index, serial_number):
         else:
             return index == 3  # Couper le quatrième câble
 
-    # Par sécurité, on renvoie False si les règles ne correspondent à aucun cas.
     return False

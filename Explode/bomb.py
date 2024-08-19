@@ -12,7 +12,7 @@ class Bomb:
         return ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=6))
 
     def generate_wires(self):
-        num_wires = 3 #random.randint(3, 6)
+        num_wires = random.randint(3, 4)
         colors = ["rouge", "bleu", "jaune", "noir", "blanc"]
         
         for _ in range(num_wires):
