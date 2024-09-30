@@ -3,5 +3,5 @@
 -in phone, place the result square below<br>
 -add try mode after the result with more or less rgb<br>
 -add mode with hue, saturation and brightness<br>
-   -with a export hexadecimal and click on the color<br>
+   -copy the hexadecimal with a click on the color<br>
 -add store color and template<br>
