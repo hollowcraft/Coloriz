@@ -1,4 +1,4 @@
-<strong>To Do List<strong> <br>
+<strong>To Do List</strong> <br>
   coloriz:<br>
 -in phone, place the result square below<br>
 -add try mode after the result with more or less rgb<br>
