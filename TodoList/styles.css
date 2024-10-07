@@ -6,7 +6,7 @@ body {
     flex-direction: column;
     align-items: center;
     background:
-        linear-gradient(in lch, #ffffff, #ffffff)
+        linear-gradient(in lch, #343539, #292b2f)
     }
 
 #container {
@@ -61,6 +61,29 @@ body {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    position: fixed; /* Position fixed to stick at the bottom */
+    bottom: 20px; /* Adjust this value to control the distance from the bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center precisely by moving left by 50% of its own width */
+    z-index: 1000; /* Ensure the button appears above other elements */
+}
+
+.save-button {
+    height: 60px;
+    width: 300px;
+    border-radius: 30px;
+    background-color: #61dafb;
+    color: #282C34;
+    font-size: 18px;
+    font-weight: bold;
+    position: fixed;
+    bottom: 90px; /* Just above the 'Add' button */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    z-index: 1000;
 }
 
 .icon-class {

@@ -1,0 +1,90 @@
+/* Styles de base pour le corps de la page */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Styles pour le titre principal */
+h1 {
+    background-color: #007bff;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+    margin: 0;
+}
+
+/* Styles pour le formulaire */
+form {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+/* Styles pour les éléments du formulaire */
+input[type="file"] {
+    margin-right: 0.5rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: #28a745;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+/* Styles pour les sections de sortie */
+#output {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Styles pour les paragraphes */
+#output p {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+/* Styles pour les statistiques des niveaux */
+.level-stats {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+.level-stats h3 {
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Styles pour les statuts de complétion */
+.level-stats p {
+    margin: 0.5rem 0;
+}
+
+/* Couleurs pour les statuts de complétion */
+.level-stats .status-completed {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.level-stats .status-not-completed {
+    color: #dc3545;
+    font-weight: bold;
+}

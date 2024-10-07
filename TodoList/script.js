@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const trash = document.getElementById('trash');
     const colorPickerButton = document.getElementById('colorPickerButton');
     const colorPalette = document.getElementById('colorPalette');
+    const saveButton = document.getElementById('saveButton');
     let selectedColor = '#ffeb3b'; // Default color
     let dragEnabled = true; // Flag to control drag state
 
@@ -40,6 +41,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Save manually when clicking the "Save" button
+    saveButton.addEventListener('click', () => {
+        saveBlocks();
+        alert('Tous les blocs ont été sauvegardés !'); // Message de confirmation
+    });
+
     // Function to add a new block
     function addBlock(x = 10, y = 10, height = 150, text = '', color = selectedColor) {
         const block = document.createElement('div');
@@ -68,6 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
             dragEnabled = false;
             block.style.cursor = 'text'; // Change cursor to indicate edit mode
         });
+
+        // Save changes to localStorage whenever the content of the block changes
+        block.addEventListener('input', saveBlocks);
 
         // Save blocks to local storage
         saveBlocks();
@@ -167,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             x: block.style.left,
             y: block.style.top,
             height: block.offsetHeight, // Save the actual height
-            text: block.textContent,
+            text: block.textContent.trim(), // Save the text content
             color: block.style.backgroundColor // Save the color
         }));
         localStorage.setItem('blocks', JSON.stringify(blocks));
