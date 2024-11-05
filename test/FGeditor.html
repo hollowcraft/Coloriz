@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Éditeur de Niveaux XML - Couche FG</title>
+    <title>XML Level Editor - FG Layer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -86,19 +86,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>Éditeur de Niveaux XML - Couche FG</h1>
-        <button id="loadButton">Charger Niveau XML</button>
-        <div id="properties" class="properties"></div>
+        <h1>XML Level Editor - FG Layer</h1>
+        <button id="loadButton">Load XML Level</button>
+        <div id="properties" class="properties"></div> 
         <div id="matrix" class="matrix"></div>
         <div class="color-palette" id="colorPalette"></div>
-        <button id="saveButton">Sauvegarder Niveau XML</button>
+        <button id="saveButton">Save XML Level</button>
     </div>
 
     <script>
         let xmlDoc = null;
         let currentFileName = "";
         let isMouseDown = false;
-        let currentColor = "#ffffff"; // Couleur par défaut
+        let currentColor = "#ffffff"; // Default color
         let currentColorValue = 0;
 
         document.getElementById("loadButton").addEventListener("click", loadLevel);
@@ -108,7 +108,7 @@
         function loadLevel() {
             const fileInput = document.createElement("input");
             fileInput.type = "file";
-            fileInput.accept = ".xml, .tmx";
+            fileInput.accept = ".tmx";
             fileInput.onchange = (event) => {
                 const file = event.target.files[0];
                 if (file) {
@@ -131,12 +131,12 @@
             displayProperties(xmlDoc);
             const fgLayer = Array.from(xmlDoc.getElementsByTagName("layer")).find(layer => layer.getAttribute("name").toLowerCase().includes("fg"));
             displayLayer(fgLayer);
-            populateColorPalette(); // Palette de couleurs
+            populateColorPalette(); // Color palette
         }
 
         function displayProperties(xmlDoc) {
             const propertiesDiv = document.getElementById("properties");
-            propertiesDiv.innerHTML = ""; // Effacer les propriétés précédentes
+            propertiesDiv.innerHTML = ""; // Clear previous properties
 
             const properties = xmlDoc.getElementsByTagName("properties")[0];
             if (properties) {
@@ -146,13 +146,13 @@
                     propertiesDiv.innerHTML += `<p>${name}: ${value}</p>`;
                 }
             } else {
-                propertiesDiv.innerHTML = "<p>Aucune propriété trouvée.</p>";
+                propertiesDiv.innerHTML = "<p>No properties found.</p>";
             }
         }
 
         function displayLayer(layer) {
             const matrixDiv = document.getElementById("matrix");
-            matrixDiv.innerHTML = ""; // Effacer le contenu précédent
+            matrixDiv.innerHTML = ""; // Clear previous content
 
             const width = parseInt(layer.getAttribute("width"), 10);
             const height = parseInt(layer.getAttribute("height"), 10);
@@ -175,7 +175,7 @@
                         tileDiv.dataset.row = rowIndex;
                         tileDiv.dataset.col = colIndex;
 
-                        // Ajoute les écouteurs pour remplir en maintenant le clic
+                        // Add listeners for filling while holding the click
                         tileDiv.addEventListener("mousedown", () => {
                             isMouseDown = true;
                             applyColorToTile(tileDiv, layer, width);
@@ -194,27 +194,25 @@
         }
 
         function getTileColor(tileValue) {
-            // Couleurs personnalisées pour la couche FG
-            if (tileValue === 0) return "#ffffff"; // Blanc pour 0
-            else if (tileValue === 84) return "#000000"; // Noir pour 84
-            else if (tileValue === 74) return "#5592B0"; // Gris pour 74
+            // Custom colors for the FG layer
+            if (tileValue === 0) return "#ffffff"; // White for 0
+            else if (tileValue === 84) return "#000000"; // Black for 84
+            else if (tileValue === 74) return "#5592B0"; // Gray for 74
             else if (tileValue === 80) return "#ff0000";
             else if (tileValue === 81) return "#0000ff";
-            else if (tileValue === 75) return "#F9685C";
-            else return "#cccccc"; // Gris clair par défaut pour les autres valeurs
+            else return "#cccccc"; // Light gray as default for other values
         }
 
         function populateColorPalette() {
             const colorPaletteDiv = document.getElementById("colorPalette");
-            colorPaletteDiv.innerHTML = ""; // Effacer la palette précédente
+            colorPaletteDiv.innerHTML = ""; // Clear previous palette
 
             const colors = [
                 { value: 0, color: "#ffffff" },
                 { value: 84, color: "#000000" },
                 { value: 74, color: "#5592B0" },
                 { value: 80, color: "#ff0000" },
-                { value: 81, color: "#0000ff" },
-                { value: 75, color: "#F9685C" }
+                { value: 81, color: "#0000ff" }
             ];
 
             colors.forEach(({ value, color }) => {
@@ -225,7 +223,7 @@
 
                 const valueLabel = document.createElement("span");
                 valueLabel.className = "color-value";
-                valueLabel.innerText = value; // Afficher la valeur sur la palette
+                valueLabel.innerText = value; // Display the value on the palette
                 swatch.appendChild(valueLabel);
 
                 swatch.addEventListener("click", () => {
@@ -252,7 +250,7 @@
         function saveLevel() {
             const serializer = new XMLSerializer();
             const newXmlContent = serializer.serializeToString(xmlDoc);
-            const modifiedFileName = `${currentFileName}_modifié.xml`; 
+            const modifiedFileName = `${currentFileName}.tmx`; 
 
             const blob = new Blob([newXmlContent], { type: "application/xml" });
             const url = URL.createObjectURL(blob);
