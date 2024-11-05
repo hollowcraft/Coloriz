@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XML Level Editor - FG Layer</title>
+    <title>Level Editor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
-            margin: 0;
             padding: 20px;
+            margin: 0;
         }
 
         .container {
@@ -21,25 +21,18 @@
             text-align: center;
         }
 
-        button {
+        button, select {
             display: block;
             margin: 20px auto;
-            padding: 10px 20px;
+            padding: 10px;
             font-size: 16px;
             cursor: pointer;
-        }
-
-        .properties {
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: #fff;
-            margin-bottom: 20px;
         }
 
         .matrix {
             display: flex;
             flex-direction: column;
-            margin-bottom: 20px;
+            margin: 20px auto;
         }
 
         .row {
@@ -49,46 +42,42 @@
         .tile {
             width: 20px;
             height: 20px;
-            margin: 0;
+            margin: 0; 
             background-color: transparent;
+            box-sizing: border-box; 
         }
 
         .color-palette {
             display: flex;
             flex-wrap: wrap;
-            margin-bottom: 20px;
+            margin: 20px auto;
         }
 
         .color-swatch {
-            position: relative;
             width: 40px;
             height: 40px;
             cursor: pointer;
             margin: 5px;
             border: 1px solid #000;
-        }
-
-        .color-value {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
             color: #fff;
             font-weight: bold;
-            font-size: 12px;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>XML Level Editor - FG Layer</h1>
+        <h1>XML Level Editor - FG, Gravity, Spawn, and BG Layers</h1>
         <button id="loadButton">Load XML Level</button>
-        <div id="properties" class="properties"></div> 
+        <select id="layerSelector">
+            <option value="fg">FG Layer</option>
+            <option value="gravity">Gravity Layer</option>
+            <option value="spawn">Spawn Layer</option>
+            <option value="bg">BG Layer</option> <!-- Added BG Layer option -->
+        </select>
         <div id="matrix" class="matrix"></div>
         <div class="color-palette" id="colorPalette"></div>
         <button id="saveButton">Save XML Level</button>
@@ -97,12 +86,17 @@
     <script>
         let xmlDoc = null;
         let currentFileName = "";
+        let currentLayer = "fg";
         let isMouseDown = false;
-        let currentColor = "#ffffff"; // Default color
+        let currentColor = "#ffffff"; 
         let currentColorValue = 0;
 
         document.getElementById("loadButton").addEventListener("click", loadLevel);
         document.getElementById("saveButton").addEventListener("click", saveLevel);
+        document.getElementById("layerSelector").addEventListener("change", (e) => {
+            currentLayer = e.target.value;
+            updateDisplay();
+        });
         document.addEventListener("mouseup", () => isMouseDown = false);
 
         function loadLevel() {
@@ -113,7 +107,7 @@
                 const file = event.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    currentFileName = file.name.replace(/\.xml$|\.tmx$/i, ""); 
+                    currentFileName = file.name.replace(/\.xml$|\.tmx$/i, "");
                     reader.onload = (e) => {
                         const xmlContent = e.target.result;
                         parseXML(xmlContent);
@@ -127,32 +121,16 @@
         function parseXML(xmlContent) {
             const parser = new DOMParser();
             xmlDoc = parser.parseFromString(xmlContent, "text/xml");
-
-            displayProperties(xmlDoc);
-            const fgLayer = Array.from(xmlDoc.getElementsByTagName("layer")).find(layer => layer.getAttribute("name").toLowerCase().includes("fg"));
-            displayLayer(fgLayer);
-            populateColorPalette(); // Color palette
+            updateDisplay();
+            populateColorPalette(); 
         }
 
-        function displayProperties(xmlDoc) {
-            const propertiesDiv = document.getElementById("properties");
-            propertiesDiv.innerHTML = ""; // Clear previous properties
-
-            const properties = xmlDoc.getElementsByTagName("properties")[0];
-            if (properties) {
-                for (const prop of properties.children) {
-                    const name = prop.getAttribute("name");
-                    const value = prop.getAttribute("value");
-                    propertiesDiv.innerHTML += `<p>${name}: ${value}</p>`;
-                }
-            } else {
-                propertiesDiv.innerHTML = "<p>No properties found.</p>";
-            }
-        }
-
-        function displayLayer(layer) {
+        function updateDisplay() {
             const matrixDiv = document.getElementById("matrix");
-            matrixDiv.innerHTML = ""; // Clear previous content
+            matrixDiv.innerHTML = ""; 
+
+            const layer = Array.from(xmlDoc.getElementsByTagName("layer")).find(l => l.getAttribute("name").toLowerCase().includes(currentLayer));
+            if (!layer) return;
 
             const width = parseInt(layer.getAttribute("width"), 10);
             const height = parseInt(layer.getAttribute("height"), 10);
@@ -175,7 +153,6 @@
                         tileDiv.dataset.row = rowIndex;
                         tileDiv.dataset.col = colIndex;
 
-                        // Add listeners for filling while holding the click
                         tileDiv.addEventListener("mousedown", () => {
                             isMouseDown = true;
                             applyColorToTile(tileDiv, layer, width);
@@ -194,25 +171,42 @@
         }
 
         function getTileColor(tileValue) {
-            // Custom colors for the FG layer
-            if (tileValue === 0) return "#ffffff"; // White for 0
-            else if (tileValue === 84) return "#000000"; // Black for 84
-            else if (tileValue === 74) return "#5592B0"; // Gray for 74
-            else if (tileValue === 80) return "#ff0000";
-            else if (tileValue === 81) return "#0000ff";
-            else return "#cccccc"; // Light gray as default for other values
+            if (currentLayer === "fg") {
+                if (tileValue === 0) return "#ffffff"; // White for 0
+                else if (tileValue === 84) return "#000000"; // Black for 84
+                else if (tileValue === 74) return "#5592B0"; // Gray for 74
+                else if (tileValue === 80) return "#ff0000";
+                else if (tileValue === 81) return "#0000ff";
+                else return "#cccccc"; // Light gray as default for other values
+            } else if (currentLayer === "gravity") {
+                return tileValue === 0 ? "#ff0000" : tileValue === 4 ? "#0000ff" : "#888888";
+            } else if (currentLayer === "spawn") {
+                return tileValue === 0 ? "#ffffff" : "#00ff00";
+            } else if (currentLayer === "bg") { // New layer color logic
+                return tileValue === 0 ? "#ffffff" : tileValue === 77 ? "#cccccc" : "#888888"; // White for 0, Gray for 77
+            }
+            return "#ffffff";
         }
 
         function populateColorPalette() {
             const colorPaletteDiv = document.getElementById("colorPalette");
-            colorPaletteDiv.innerHTML = ""; // Clear previous palette
+            colorPaletteDiv.innerHTML = ""; 
 
-            const colors = [
+            const colors = currentLayer === "fg" ? [
                 { value: 0, color: "#ffffff" },
                 { value: 84, color: "#000000" },
                 { value: 74, color: "#5592B0" },
                 { value: 80, color: "#ff0000" },
                 { value: 81, color: "#0000ff" }
+            ] : currentLayer === "gravity" ? [
+                { value: 0, color: "#ff0000" },
+                { value: 4, color: "#0000ff" }
+            ] : currentLayer === "bg" ? [ // Colors for BG layer
+                { value: 0, color: "#ffffff" },
+                { value: 77, color: "#cccccc" }
+            ] : [
+                { value: 0, color: "#ffffff" },
+                { value: 1, color: "#00ff00" }
             ];
 
             colors.forEach(({ value, color }) => {
@@ -221,10 +215,7 @@
                 swatch.style.backgroundColor = color;
                 swatch.dataset.value = value;
 
-                const valueLabel = document.createElement("span");
-                valueLabel.className = "color-value";
-                valueLabel.innerText = value; // Display the value on the palette
-                swatch.appendChild(valueLabel);
+                swatch.innerText = value;
 
                 swatch.addEventListener("click", () => {
                     currentColorValue = value;
@@ -258,7 +249,7 @@
             a.href = url;
             a.download = modifiedFileName;
             a.click();
-            URL.revokeObjectURL(url); 
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
