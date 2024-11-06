@@ -5,3 +5,5 @@
 -add mode with hue, saturation and brightness<br>
    -copy the hexadecimal with a click on the color<br>
 -add store color and template<br>
+
+faire Gant
