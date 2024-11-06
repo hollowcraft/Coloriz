@@ -6,4 +6,4 @@
    -copy the hexadecimal with a click on the color<br>
 -add store color and template<br>
 
-faire Gant
+faire Gant du projet ventillateur en l'envoyé au prof
