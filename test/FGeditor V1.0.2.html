@@ -213,6 +213,7 @@
             } else if (currentLayer === "spawn") {
                 if (tileValue === 0) return "#ffffff";
                 else if (tileValue === 10625) return "#00aa00";
+		else if (tileValue === 10622) return "#aa0000";
 		else return "#00ff00";
             } else if (currentLayer === "bg") {
                 return tileValue === 0 ? "#ffffff" : tileValue === 77 ? "#cccccc" : "#888888";
@@ -239,7 +240,10 @@
             ] : [
                 { value: 0, color: "#ffffff" },
                 { value: 1, color: "#00ff00" },
-                { value: 10625, color: "#00aa00" }
+                { value: 10625, color: "#00aa00" },
+                { value: 10622, color: "#0000aa" }
+		
+		
             ];
 
             colors.forEach(({ value, color }) => {
