@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AD2 Level Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        button, select {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .matrix {
+            display: flex;
+            flex-direction: column;
+            margin: 20px auto;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .tile {
+            width: 20px;
+            height: 20px;
+            margin: 0; 
+            background-color: transparent;
+            box-sizing: border-box; 
+        }
+
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px auto;
+        }
+
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            margin: 5px;
+            border: 1px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #fff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AD2 Level Editor</h1>
+        <button id="loadButton">Load XML Level</button>
+        <select id="layerSelector">
+            <option value="fg">FG Layer</option>
+            <option value="gravity">Gravity Layer</option>
+            <option value="spawn">Spawn Layer</option>
+            <option value="bg">BG Layer</option> <!-- Added BG Layer option -->
+        </select>
+        <div id="matrix" class="matrix"></div>
+        <div class="color-palette" id="colorPalette"></div>
+        <button id="saveButton">Save XML Level</button>
+    </div>
+
+    <script>
+        let xmlDoc = null;
+        let currentFileName = "";
+        let currentLayer = "fg";
+        let isMouseDown = false;
+        let currentColor = "#ffffff"; 
+        let currentColorValue = 0;
+
+        document.getElementById("loadButton").addEventListener("click", loadLevel);
+        document.getElementById("saveButton").addEventListener("click", saveLevel);
+        document.getElementById("layerSelector").addEventListener("change", (e) => {
+            currentLayer = e.target.value;
+            updateDisplay();
+        });
+        document.addEventListener("mouseup", () => isMouseDown = false);
+
+        function loadLevel() {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = ".tmx";
+            fileInput.onchange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    currentFileName = file.name.replace(/\.xml$|\.tmx$/i, "");
+                    reader.onload = (e) => {
+                        const xmlContent = e.target.result;
+                        parseXML(xmlContent);
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            fileInput.click();
+        }
+
+        function parseXML(xmlContent) {
+            const parser = new DOMParser();
+            xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+            updateDisplay();
+            populateColorPalette(); 
+        }
+
+        function updateDisplay() {
+            const matrixDiv = document.getElementById("matrix");
+            matrixDiv.innerHTML = ""; 
+
+            const layer = Array.from(xmlDoc.getElementsByTagName("layer")).find(l => l.getAttribute("name").toLowerCase().includes(currentLayer));
+            if (!layer) return;
+
+            const width = parseInt(layer.getAttribute("width"), 10);
+            const height = parseInt(layer.getAttribute("height"), 10);
+            const dataElem = layer.getElementsByTagName("data")[0];
+
+            if (dataElem && dataElem.textContent) {
+                const tileData = dataElem.textContent.trim().split(",").map(Number);
+                const matrix = Array.from({ length: height }, (_, i) =>
+                    tileData.slice(i * width, (i + 1) * width)
+                );
+
+                matrix.forEach((row, rowIndex) => {
+                    const rowDiv = document.createElement("div");
+                    rowDiv.className = "row";
+                    row.forEach((tile, colIndex) => {
+                        const tileDiv = document.createElement("div");
+                        tileDiv.className = "tile";
+                        tileDiv.style.backgroundColor = getTileColor(tile);
+                        tileDiv.dataset.value = tile;
+                        tileDiv.dataset.row = rowIndex;
+                        tileDiv.dataset.col = colIndex;
+
+                        tileDiv.addEventListener("mousedown", () => {
+                            isMouseDown = true;
+                            applyColorToTile(tileDiv, layer, width);
+                        });
+                        tileDiv.addEventListener("mouseover", () => {
+                            if (isMouseDown) {
+                                applyColorToTile(tileDiv, layer, width);
+                            }
+                        });
+
+                        rowDiv.appendChild(tileDiv);
+                    });
+                    matrixDiv.appendChild(rowDiv);
+                });
+            }
+        }
+
+        function getTileColor(tileValue) {
+            if (currentLayer === "fg") {
+                if (tileValue === 0) return "#ffffff"; // White for 0
+                else if (tileValue === 84) return "#000000"; // Black for 84
+                else if (tileValue === 74) return "#5592B0"; // Gray for 74
+                else if (tileValue === 80) return "#ff0000";
+                else if (tileValue === 81) return "#0000ff";
+                else if (tileValue === 75) return "#BD8D74";
+                else return "#cccccc"; // Light gray as default for other values
+            } else if (currentLayer === "gravity") {
+                return tileValue === 0 ? "#ff0000" : tileValue === 4 ? "#0000ff" : "#888888";
+            } else if (currentLayer === "spawn") {
+                return tileValue === 0 ? "#ffffff" : "#00ff00";
+            } else if (currentLayer === "bg") { // New layer color logic
+                return tileValue === 0 ? "#ffffff" : tileValue === 77 ? "#cccccc" : "#888888"; // White for 0, Gray for 77
+            }
+            return "#ffffff";
+        }
+
+        function populateColorPalette() {
+            const colorPaletteDiv = document.getElementById("colorPalette");
+            colorPaletteDiv.innerHTML = ""; 
+
+            const colors = currentLayer === "fg" ? [
+                { value: 0, color: "#ffffff" },
+                { value: 84, color: "#000000" },
+                { value: 74, color: "#5592B0" },
+                { value: 80, color: "#ff0000" },
+                { value: 81, color: "#0000ff" },
+                { value: 75, color: "#BD8D74" }
+                
+            ] : currentLayer === "gravity" ? [
+                { value: 0, color: "#ff0000" },
+                { value: 4, color: "#0000ff" }
+            ] : currentLayer === "bg" ? [ // Colors for BG layer
+                { value: 0, color: "#ffffff" },
+                { value: 77, color: "#cccccc" }
+            ] : [
+                { value: 0, color: "#ffffff" },
+                { value: 1, color: "#00ff00" }
+            ];
+
+            colors.forEach(({ value, color }) => {
+                const swatch = document.createElement("div");
+                swatch.className = "color-swatch";
+                swatch.style.backgroundColor = color;
+                swatch.dataset.value = value;
+
+                swatch.innerText = value;
+
+                swatch.addEventListener("click", () => {
+                    currentColorValue = value;
+                    currentColor = color;
+                });
+                colorPaletteDiv.appendChild(swatch);
+            });
+        }
+
+        function applyColorToTile(tileDiv, layer, width) {
+            const row = tileDiv.dataset.row;
+            const col = tileDiv.dataset.col;
+            const dataElem = layer.getElementsByTagName("data")[0];
+
+            const tileData = dataElem.textContent.trim().split(",").map(Number);
+            tileData[row * width + parseInt(col)] = currentColorValue;
+
+            dataElem.textContent = tileData.join(",");
+            tileDiv.style.backgroundColor = currentColor;
+            tileDiv.dataset.value = currentColorValue;
+        }
+
+        function saveLevel() {
+            const serializer = new XMLSerializer();
+            const newXmlContent = serializer.serializeToString(xmlDoc);
+            const modifiedFileName = `${currentFileName}.tmx`; 
+
+            const blob = new Blob([newXmlContent], { type: "application/xml" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = modifiedFileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

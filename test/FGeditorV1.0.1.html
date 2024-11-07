@@ -76,11 +76,12 @@
             <option value="fg">FG Layer</option>
             <option value="gravity">Gravity Layer</option>
             <option value="spawn">Spawn Layer</option>
-            <option value="bg">BG Layer</option> <!-- Added BG Layer option -->
+            <option value="bg">BG Layer</option>
         </select>
         <div id="matrix" class="matrix"></div>
         <div class="color-palette" id="colorPalette"></div>
         <button id="saveButton">Save XML Level</button>
+        <button id="pipetteButton">Pipette</button> <!-- Bouton pour activer la pipette -->
     </div>
 
     <script>
@@ -90,6 +91,7 @@
         let isMouseDown = false;
         let currentColor = "#ffffff"; 
         let currentColorValue = 0;
+        let pipetteMode = false;
 
         document.getElementById("loadButton").addEventListener("click", loadLevel);
         document.getElementById("saveButton").addEventListener("click", saveLevel);
@@ -97,7 +99,13 @@
             currentLayer = e.target.value;
             updateDisplay();
         });
+        document.getElementById("pipetteButton").addEventListener("click", togglePipetteMode); // Activer/Désactiver pipette
         document.addEventListener("mouseup", () => isMouseDown = false);
+
+        function togglePipetteMode() {
+            pipetteMode = !pipetteMode;
+            document.getElementById("pipetteButton").textContent = pipetteMode ? "Disable Pipette" : "Pipette";
+        }
 
         function loadLevel() {
             const fileInput = document.createElement("input");
@@ -154,11 +162,15 @@
                         tileDiv.dataset.col = colIndex;
 
                         tileDiv.addEventListener("mousedown", () => {
-                            isMouseDown = true;
-                            applyColorToTile(tileDiv, layer, width);
+                            if (pipetteMode) {
+                                usePipette(tileDiv);
+                            } else {
+                                isMouseDown = true;
+                                applyColorToTile(tileDiv, layer, width);
+                            }
                         });
                         tileDiv.addEventListener("mouseover", () => {
-                            if (isMouseDown) {
+                            if (isMouseDown && !pipetteMode) {
                                 applyColorToTile(tileDiv, layer, width);
                             }
                         });
@@ -170,20 +182,29 @@
             }
         }
 
+        function usePipette(tileDiv) {
+            currentColor = tileDiv.style.backgroundColor;
+            currentColorValue = parseInt(tileDiv.dataset.value);
+            pipetteMode = false;
+            document.getElementById("pipetteButton").textContent = "Pipette";
+            alert(`Pipette: Color Value ${currentColorValue} selected.`);
+        }
+
         function getTileColor(tileValue) {
             if (currentLayer === "fg") {
-                if (tileValue === 0) return "#ffffff"; // White for 0
-                else if (tileValue === 84) return "#000000"; // Black for 84
-                else if (tileValue === 74) return "#5592B0"; // Gray for 74
+                if (tileValue === 0) return "#ffffff";
+                else if (tileValue === 84) return "#000000";
+                else if (tileValue === 74) return "#5592B0";
                 else if (tileValue === 80) return "#ff0000";
                 else if (tileValue === 81) return "#0000ff";
-                else return "#cccccc"; // Light gray as default for other values
+                else if (tileValue === 75) return "#BD8D74";
+                else return "#cccccc";
             } else if (currentLayer === "gravity") {
                 return tileValue === 0 ? "#ff0000" : tileValue === 4 ? "#0000ff" : "#888888";
             } else if (currentLayer === "spawn") {
                 return tileValue === 0 ? "#ffffff" : "#00ff00";
-            } else if (currentLayer === "bg") { // New layer color logic
-                return tileValue === 0 ? "#ffffff" : tileValue === 77 ? "#cccccc" : "#888888"; // White for 0, Gray for 77
+            } else if (currentLayer === "bg") {
+                return tileValue === 0 ? "#ffffff" : tileValue === 77 ? "#cccccc" : "#888888";
             }
             return "#ffffff";
         }
@@ -197,11 +218,13 @@
                 { value: 84, color: "#000000" },
                 { value: 74, color: "#5592B0" },
                 { value: 80, color: "#ff0000" },
-                { value: 81, color: "#0000ff" }
+                { value: 81, color: "#0000ff" },
+                { value: 75, color: "#BD8D74" }
+                
             ] : currentLayer === "gravity" ? [
                 { value: 0, color: "#ff0000" },
                 { value: 4, color: "#0000ff" }
-            ] : currentLayer === "bg" ? [ // Colors for BG layer
+            ] : currentLayer === "bg" ? [
                 { value: 0, color: "#ffffff" },
                 { value: 77, color: "#cccccc" }
             ] : [
@@ -214,9 +237,7 @@
                 swatch.className = "color-swatch";
                 swatch.style.backgroundColor = color;
                 swatch.dataset.value = value;
-
                 swatch.innerText = value;
-
                 swatch.addEventListener("click", () => {
                     currentColorValue = value;
                     currentColor = color;
@@ -241,7 +262,7 @@
         function saveLevel() {
             const serializer = new XMLSerializer();
             const newXmlContent = serializer.serializeToString(xmlDoc);
-            const modifiedFileName = `${currentFileName}.tmx`; 
+            const modifiedFileName = `${currentFileName}.tmx`;
 
             const blob = new Blob([newXmlContent], { type: "application/xml" });
             const url = URL.createObjectURL(blob);
