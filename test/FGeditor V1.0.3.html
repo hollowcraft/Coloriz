@@ -88,8 +88,8 @@
         </select>
         <div id="matrix" class="matrix"></div>
         <div class="color-palette" id="colorPalette"></div>
+	<button id="color-swatch">Pipette</button>
         <button id="saveButton">Save XML Level</button>
-        <button id="pipetteButton">Pipette</button>
     </div>
 
     <script>
@@ -108,7 +108,9 @@
             updateDisplay();
         });
         document.getElementById("pipetteButton").addEventListener("click", togglePipetteMode);
-        document.addEventListener("mouseup", () => isMouseDown = false);
+        document.addEventListener("mousedown", () => isMouseDown = true);
+	document.addEventListener("mouseup", () => isMouseDown = false);
+
 
         function togglePipetteMode() {
             pipetteMode = !pipetteMode;
@@ -214,6 +216,8 @@
                 if (tileValue === 0) return "#ffffff";
                 else if (tileValue === 10625) return "#00aa00";
 		else if (tileValue === 10622) return "#0000aa";
+		else if (tileValue === 10519) return "#0000ff";
+		else if (tileValue === 10587) return "#cccccc";
 		else return "#00ff00";
             } else if (currentLayer === "bg") {
                 return tileValue === 0 ? "#ffffff" : tileValue === 77 ? "#cccccc" : "#888888";
@@ -241,9 +245,9 @@
                 { value: 0, color: "#ffffff" },
                 { value: 1, color: "#00ff00" },
                 { value: 10625, color: "#00aa00" },
-                { value: 10622, color: "#0000aa" }
-		
-		
+                { value: 10622, color: "#0000aa" },
+                { value: 10519, color: "#0000ff" },
+                { value: 10587, color: "#cccccc" }
             ];
 
             colors.forEach(({ value, color }) => {
