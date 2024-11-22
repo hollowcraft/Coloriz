@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Couleur RGB</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
+    #color-box, #user-color-box {
+        width: 200px;
+        height: 200px;
+        margin: 20px auto;
+        border: 0px solid black;
+        background-color: rgb(255, 255, 255);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+    .slider-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 10px 0;
+    }
+    .color-slider {
+        width: 150px;
+        height: 15px;
+        -webkit-appearance: none;
+        appearance: none;
+        border-radius: 5px;
+        outline: none;
+        opacity: 0.8;
+        transition: opacity .2s, transform 0.2s ease-in-out;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .color-slider:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    .color-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 100%;
+        background: #fff;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    }
+    .color-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    }
+    #h-slider {
+        background: linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red);
+    }
+    #s-slider {
+        background: linear-gradient(to right, grey, red);
+    }
+    #b-slider {
+        background: linear-gradient(to right, black, white);
+    }
+    button {
+        margin: 10px;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: all 0.3s ease-in-out;
+    }
+    #check-btn {
+        background-color: #4CAF50;
+        color: white;
+    }
+    #reset-btn {
+        background-color: #f44336;
+        color: white;
+    }
+    #dark-mode-btn {
+        background-color: #333;
+        color: white;
+    }
+    #result-text p {
+        margin: 5px 0;
+    }
+    .dark-mode {
+        background-color: #3a414d;
+        color: #ffffff;
+    }
+</style>
+
+<div>
+    <div id="color-box"></div>
+    <form id="color-form">
+        <div class="slider-container">
+            <label for="h-slider">Hue:</label>
+            <input type="range" class="color-slider" id="h-slider" min="0" max="360" value="180">
+            <input type="number" class="slider-value" id="h-value" min="0" max="360" value="180">
+        </div>
+        <div class="slider-container">
+            <label for="s-slider">Saturation:</label>
+            <input type="range" class="color-slider" id="s-slider" min="0" max="100" value="50">
+            <input type="number" class="slider-value" id="s-value" min="0" max="100" value="50">
+        </div>
+        <div class="slider-container">
+            <label for="b-slider">Brightness:</label>
+            <input type="range" class="color-slider" id="b-slider" min="0" max="100" value="50">
+            <input type="number" class="slider-value" id="b-value" min="0" max="100" value="50">
+        </div>
+        <button type="button" id="check-btn">Vérifier</button>
+        <button type="button" id="reset-btn">Reset</button>
+        <button type="button" id="dark-mode-btn">Mode Sombre</button>
+    </form>
+    <div id="user-color-box"></div>
+    <div id="result-text"></div>
+</div>
+
+<script>
+    // Fonction pour mettre à jour les curseurs et les champs de texte
+    function updateSlidersAndInputs(color) {
+        document.getElementById('h-slider').value = color[0];
+        document.getElementById('s-slider').value = color[1];
+        document.getElementById('b-slider').value = color[2];
+        document.getElementById('h-value').value = color[0];
+        document.getElementById('s-value').value = color[1];
+        document.getElementById('b-value').value = color[2];
+    }
+
+    // Générer une couleur aléatoire en HSB
+    function generateRandomHSB() {
+        return [
+            Math.floor(Math.random() * 361), // Hue : 0-360
+            Math.floor(Math.random() * 101), // Saturation : 0-100
+            Math.floor(Math.random() * 101)  // Brightness : 0-100
+        ];
+    }
+
+    // Fonction pour convertir HSB en RGB
+    function hsbToRgb(h, s, b) {
+        s /= 100;
+        b /= 100;
+
+        const k = (n) => (n + h / 60) % 6;
+        const f = (n) => b * (1 - s * Math.max(Math.min(k(n), 4 - k(n), 1), 0));
+
+        return [
+            Math.round(f(5) * 255),
+            Math.round(f(3) * 255),
+            Math.round(f(1) * 255)
+        ];
+    }
+
+    // Afficher une couleur aléatoire
+    function displayRandomColor() {
+        generatedColor = generateRandomHSB();
+        const rgbColor = hsbToRgb(generatedColor[0], generatedColor[1], generatedColor[2]);
+        const colorBox = document.getElementById('color-box');
+        colorBox.style.backgroundColor = `rgb(${rgbColor.join(',')})`;
+    }
+
+    // Calculer la différence entre deux couleurs HSB
+    function colorDifference(hsb1, hsb2) {
+        return Math.abs(hsb1[0] - hsb2[0]) +
+            Math.abs(hsb1[1] - hsb2[1]) +
+            Math.abs(hsb1[2] - hsb2[2]);
+    }
+
+    // Mettre à jour les valeurs entre les curseurs et les champs de texte
+    function updateInputFromSlider(sliderId, valueId) {
+        document.getElementById(sliderId).addEventListener('input', function () {
+            document.getElementById(valueId).value = this.value;
+        });
+    }
+
+    function updateSliderFromInput(sliderId, valueId) {
+        document.getElementById(valueId).addEventListener('input', function () {
+            let value = parseInt(this.value);
+            if (value < 0) value = 0;
+            if (value > (sliderId === 'h-slider' ? 360 : 100)) value = sliderId === 'h-slider' ? 360 : 100;
+            document.getElementById(sliderId).value = value;
+        });
+    }
+
+    // Ajouter des événements pour les curseurs
+    updateInputFromSlider('h-slider', 'h-value');
+    updateInputFromSlider('s-slider', 's-value');
+    updateInputFromSlider('b-slider', 'b-value');
+
+    updateSliderFromInput('h-slider', 'h-value');
+    updateSliderFromInput('s-slider', 's-value');
+    updateSliderFromInput('b-slider', 'b-value');
+
+    // Variables globales
+    let generatedColor;
+    let attemptCount = 0;
+    const maxAttempts = 3;
+    let totalScore = 0;
+    let attemptResults = [];
+
+    // Afficher une nouvelle couleur au chargement de la page
+    displayRandomColor();
+
+    // Calculer le score
+    function calculateScore(diff) {
+        const maxScore = 5000;
+        const maxDiff = 360 + 100 + 100; // Différence maximale possible en HSB
+        const adjustedDiff = maxDiff - diff;
+        return Math.round(maxScore * Math.pow(adjustedDiff / maxDiff, 2));
+    }
+
+    // Réinitialiser le quiz
+    document.getElementById('reset-btn').addEventListener('click', function () {
+        attemptCount = 0;
+        totalScore = 0;
+        attemptResults = [];
+        document.getElementById('result-text').innerHTML = '';
+        document.getElementById('check-btn').disabled = false;
+
+        // Réinitialiser les curseurs et champs
+        updateSlidersAndInputs([180, 50, 50]);
+        displayRandomColor();
+
+        // Réinitialiser la boîte utilisateur
+        document.getElementById('user-color-box').style.backgroundColor = 'rgb(255, 255, 255)';
+    });
+
+    // Vérifier la réponse de l'utilisateur
+    document.getElementById('check-btn').addEventListener('click', function () {
+        if (attemptCount < maxAttempts) {
+            attemptCount++;
+            const userColorHSB = [
+                parseInt(document.getElementById('h-slider').value),
+                parseInt(document.getElementById('s-slider').value),
+                parseInt(document.getElementById('b-slider').value)
+            ];
+            const userColorRGB = hsbToRgb(userColorHSB[0], userColorHSB[1], userColorHSB[2]);
+
+            const diff = colorDifference(generatedColor, userColorHSB);
+            const score = calculateScore(diff);
+            totalScore += score;
+
+            attemptResults.push({
+                attempt: attemptCount,
+                generatedColor: `hsb(${generatedColor.join(', ')})`,
+                userColor: `hsb(${userColorHSB.join(', ')})`,
+                difference: diff,
+                score: score
+            });
+
+            // Mettre à jour la boîte de l'utilisateur
+            document.getElementById('user-color-box').style.backgroundColor = `rgb(${userColorRGB.join(',')})`;
+
+            // Si c'est le dernier essai, afficher les résultats
+            if (attemptCount === maxAttempts) {
+                document.getElementById('check-btn').disabled = true;
+                let resultHTML = '';
+                attemptResults.forEach(result => {
+                    resultHTML += `
+                        <p>Essai ${result.attempt}:</p>
+                        <p>Couleur générée : ${result.generatedColor}</p>
+                        <p>Votre couleur : ${result.userColor}</p>
+                        <p>Différence totale : ${result.difference}</p>
+                        <p>Score pour cet essai : ${result.score}</p>
+                        <br>
+                    `;
+                });
+                resultHTML += `<p>Score total : ${totalScore}</p>`;
+                document.getElementById('result-text').innerHTML = resultHTML;
+            }
+        }
+    });
+
+    // Activer/désactiver le mode sombre
+    document.getElementById('dark-mode-btn').addEventListener('click', function () {
+        document.body.classList.toggle('dark-mode');
+        this.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+    });
+
+//couleur que j'aime bien
+//#457056
+//#416791
+//#426532
+//#547F47
+
+</script>
+</body>
+</html>
+
