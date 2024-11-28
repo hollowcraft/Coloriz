@@ -522,13 +522,16 @@ document.getElementById('finale-square').addEventListener('click', function() {
 });
 
     // Fonction pour générer une couleur aléatoire
-    function generateRandomColor() {
+    function generateRandomColorRGB() {
         return [Math.floor(Math.random() * 206)+50, Math.floor(Math.random() * 206)+50, Math.floor(Math.random() * 206)+50];
+    }
+    function generateRandomColorHSB() {
+        return [Math.floor(Math.random() * 361), Math.floor(Math.random() * 101), Math.floor(Math.random() * 101)];
     }
 
     // Fonction pour afficher la couleur générée
     function displayRandomColor() {
-        generatedColor = generateRandomColor();
+        generatedColor = generateRandomColorRGB();
         const colorBox = document.getElementById('color-box');
         colorBox.style.backgroundColor = 'rgb(' + generatedColor.join(',') + ')';
     }
@@ -720,7 +723,7 @@ document.getElementById('finale-square').addEventListener('click', function() {
         document.getElementById('check-btn').disabled = false;
         
         // Générer une nouvelle couleur aléatoire
-        generatedColor = generateRandomColor();
+        generatedColor = generateRandomColorRGB();
 
         // Appliquer progressivement la nouvelle couleur et la rotation
         const colorBox = document.getElementById('color-box');
