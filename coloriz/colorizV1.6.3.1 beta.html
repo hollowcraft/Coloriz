@@ -560,6 +560,14 @@ document.getElementById('finale-square').addEventListener('click', function() {
     updateSliderFromInput('g-slider', 'g-value');
     updateSliderFromInput('b-slider', 'b-value');
 
+    updateInputFromSlider('h-slider', 'h-value');
+    updateInputFromSlider('s-slider', 's-value');
+    updateInputFromSlider('b-slider', 'b-value');
+
+    updateSliderFromInput('h-slider', 'h-value');
+    updateSliderFromInput('s-slider', 's-value');
+    updateSliderFromInput('b-slider', 'b-value');
+
     // Calculer la différence entre deux couleurs
     function colorDifference(color1, color2) {
         let diff = 0;
