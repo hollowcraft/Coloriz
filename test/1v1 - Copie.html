@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu 1v1</title>
+    <style>
+        body { margin: 0; }
+        canvas { background-color: #f0f0f0; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Définition des personnages
+        const player1 = { x: 720, y: 300, width: 30, height: 30, color: 'red', dx: 0, dy: 0, health: 100, canShoot: true, facingRight: false };
+        const player2 = { x: 50, y: 300, width: 30, height: 30, color: 'blue', dx: 0, dy: 0, health: 100, canShoot: true, facingRight: true };
+
+        // Propriétés des balles
+        const bullets = [];
+        const bulletSpeed = 5;
+        const shootCooldown = 500; // Temps en millisecondes entre chaque tir
+
+        // Contrôles des joueurs
+        const keys = {};
+
+        // Boucle de jeu
+        function gameLoop() {
+            // Mise à jour des positions des personnages
+            player1.x += player1.dx;
+            player1.y += player1.dy;
+            player2.x += player2.dx;
+            player2.y += player2.dy;
+
+            // Effacer l'écran
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dessiner les personnages
+            ctx.fillStyle = player1.color;
+            ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
+
+            ctx.fillStyle = player2.color;
+            ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
+
+            // Gérer les balles
+            bullets.forEach((bullet, index) => {
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
+
+                // Détection de collision
+                if (bullet.x < player1.x + player1.width && bullet.x + 10 > player1.x && bullet.y < player1.y + player1.height && bullet.y + 10 > player1.y) {
+                    player1.health -= 10;
+                    bullets.splice(index, 1); // Supprimer la balle après collision
+                }
+
+                if (bullet.x < player2.x + player2.width && bullet.x + 10 > player2.x && bullet.y < player2.y + player2.height && bullet.y + 10 > player2.y) {
+                    player2.health -= 10;
+                    bullets.splice(index, 1); // Supprimer la balle après collision
+                }
+
+                // Effacer les balles hors de l'écran
+                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
+                    bullets.splice(index, 1);
+                }
+
+                // Dessiner la balle
+                ctx.fillStyle = 'black';
+                ctx.fillRect(bullet.x, bullet.y, 10, 10);
+            });
+
+            // Affichage de la santé
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText(`Player 1 Health: ${player1.health}`, 20, 20);
+            ctx.fillText(`Player 2 Health: ${player2.health}`, 600, 20);
+
+            // Vérifier la fin de la partie
+            if (player1.health <= 0 || player2.health <= 0) {
+                const winner = player1.health > 0 ? 'Player 1' : 'Player 2';
+                alert(`${winner} wins!`);
+                resetGame();
+            }
+
+            // Appel à la prochaine frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Contrôles du joueur 1
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function movePlayer1() {
+            if (keys['ArrowUp']) player1.dy = -2;
+            else if (keys['ArrowDown']) player1.dy = 2;
+            else player1.dy = 0;
+
+            if (keys['ArrowLeft']) {
+                player1.dx = -2;
+                player1.facingRight = false;
+            } else if (keys['ArrowRight']) {
+                player1.dx = 2;
+                player1.facingRight = true;
+            } else {
+                player1.dx = 0;
+            }
+
+            if (keys['0']) shoot(player1); // Tirer avec le joueur 1
+        }
+
+        // Contrôles du joueur 2
+        function movePlayer2() {
+            if (keys['z']) player2.dy = -2;
+            else if (keys['s']) player2.dy = 2;
+            else player2.dy = 0;
+
+            if (keys['q']) {
+                player2.dx = -2;
+                player2.facingRight = false;
+            } else if (keys['d']) {
+                player2.dx = 2;
+                player2.facingRight = true;
+            } else {
+                player2.dx = 0;
+            }
+
+            if (keys[' ']) shoot(player2); // Tirer avec le joueur 2
+        }
+
+        // Tirer une balle
+        function shoot(player) {
+            if (player.canShoot) {
+                // Créer la balle devant chaque joueur, en fonction de la direction dans laquelle il regarde
+                const bullet = {
+                    x: player.facingRight ? player.x + player.width : player.x - 10, // La direction de la balle dépend de la direction du joueur
+                    y: player.y + player.height / 2 - 5, // Centrer la balle
+                    dx: player.facingRight ? bulletSpeed : -bulletSpeed,
+                    dy: 0
+                };
+                bullets.push(bullet);
+
+                // Empêcher un nouveau tir avant la fin du cooldown
+                player.canShoot = false;
+                setTimeout(() => {
+                    player.canShoot = true;
+                }, shootCooldown); // cooldown en millisecondes
+            }
+        }
+
+        // Réinitialiser la partie
+        function resetGame() {
+            player1.x = 720;
+            player1.y = 300;
+            player1.health = 100;
+            player1.canShoot = true;
+            player1.facingRight = false;
+
+            player2.x = 50;
+            player2.y = 300;
+            player2.health = 100;
+            player2.canShoot = true;
+            player2.facingRight = true;
+
+            bullets.length = 0;
+        }
+
+        // Démarrer le jeu
+        function startGame() {
+            gameLoop();
+            setInterval(() => {
+                movePlayer1();
+                movePlayer2();
+            }, 1000 / 60);
+        }
+
+        // Lancer le jeu
+        startGame();
+    </script>
+</body>
+</html>
