@@ -729,6 +729,13 @@ document.getElementById('finale-square').addEventListener('click', function() {
         document.getElementById('g-value').value = 127;
         document.getElementById('b-value').value = 127;
 
+        document.getElementById('h-slider').value = 180;
+        document.getElementById('s-slider').value = 50;
+        document.getElementById('b2-slider').value = 50;
+        document.getElementById('h-value').value = 180;
+        document.getElementById('s-value').value = 50;
+        document.getElementById('b2-value').value = 50;
+
 
         // Réinitialiser la couleur de la boîte de l'utilisateur et cacher le carré bleu
         document.getElementById('user-color-box').style.backgroundColor = 'rgb(255, 255, 255)';
@@ -773,6 +780,7 @@ window.addEventListener('DOMContentLoaded', function () {
     document.getElementById('mode-switch').checked = false; // Mode RGB activé par défaut
     document.querySelector('.rgb-group').style.display = 'block';
     document.querySelector('.hsb-group').style.display = 'none';
+
 });
 
 function hsbToRgb(h, s, b) {
