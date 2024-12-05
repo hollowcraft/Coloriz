@@ -159,31 +159,36 @@
             player1.x = 720;
             player1.y = 300;
             player1.health = 100;
-            player1.canShoot = true;
-            player1.facingRight = false;
-
+            player1.score = 0;
+            player1.dx = 0;
+            player1.dy = 0;
+            
             player2.x = 50;
             player2.y = 300;
             player2.health = 100;
-            player2.canShoot = true;
-            player2.facingRight = true;
-
+            player2.score = 0;
+            player2.dx = 0;
+            player2.dy = 0;
+            // Réinitialiser les positions et statistiques des joueurs
+            gameTime = 0;
             bullets.length = 0;
-
-        // Réinitialiser l'état des touches
-        keys = {
-            ArrowDown: false,
-            ArrowLeft: false,
-            ArrowRight: false,
-            Enter: false,
-            w: false,
-            s: false,
-            a: false,
-            d: false,
-            ' ': false // Touche pour tirer
-            ArrowUp: false,
-
+            
+            // Réinitialiser l'état des touches
+            keys = {
+                ArrowUp: false,
+                ArrowDown: false,
+                ArrowLeft: false,
+                ArrowRight: false,
+                Enter: false,
+                w: false,
+                s: false,
+                a: false,
+                d: false,
+                ' ': false // Touche pour tirer
+            };
         }
+        // Réinitialiser le temps et les projectiles
+
 
         // Démarrer le jeu
         function startGame() {
