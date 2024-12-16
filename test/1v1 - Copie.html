@@ -7,253 +7,181 @@
     <style>
         body { margin: 0; }
         canvas { background-color: #f0f0f0; display: block; margin: 0 auto; }
-
-        .power {
-        border: 2px;
-
-        .player1 {
-
-
-        }
-
-        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="400"></canvas>
     <script>
-        // Configuration initiale
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 600;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-// Variables pour le jeu
-const playerSpeed = 5;
-const bulletSpeed = 7;
-const shootCooldown = 500; // En millisecondes
+        // Définition des personnages
+        const player1 = { x: 720, y: 300, width: 30, height: 30, color: 'red', dx: 0, dy: 0, health: 100000, canShoot: true, facingRight: false };
+        const player2 = { x: 50, y: 300, width: 30, height: 30, color: 'blue', dx: 0, dy: 0, health: 1000, canShoot: true, facingRight: true };
 
-const keys = {
-    ArrowUp: false,
-    ArrowDown: false,
-    ArrowLeft: false,
-    ArrowRight: false,
-    Enter: false,
-    w: false,
-    s: false,
-    a: false,
-    d: false,
-    ' ': false
-};
+        // Propriétés des balles
+        const bullets = [];
+        const bulletSpeed = 5;
+        const shootCooldown = 1; // Temps en millisecondes entre chaque tir
 
-const player1 = {
-    x: 50,
-    y: 300,
-    width: 20,
-    height: 20,
-    dx: 0,
-    dy: 0,
-    canShoot: true,
-    facing: 'right', // Peut être 'left', 'right', 'up', 'down', ou une combinaison
-};
+        // Contrôles des joueurs
+        const keys = {};
 
-const player2 = {
-    x: 720,
-    y: 300,
-    width: 20,
-    height: 20,
-    dx: 0,
-    dy: 0,
-    canShoot: true,
-    facing: 'left',
-};
+        // Boucle de jeu
+        function gameLoop() {
+            // Mise à jour des positions des personnages
+            player1.x += player1.dx;
+            player1.y += player1.dy;
+            player2.x += player2.dx;
+            player2.y += player2.dy;
 
-const bullets = [];
-const obstacles = [
-    { x: 300, y: 200, width: 50, height: 100 },
-    { x: 500, y: 350, width: 50, height: 100 }
-];
+            // Effacer l'écran
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Gestion des entrées clavier
-document.addEventListener('keydown', (e) => {
-    if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
-});
+            // Dessiner les personnages
+            ctx.fillStyle = player1.color;
+            ctx.fillRect(player1.x, player1.y, player1.width, player1.height);
 
-document.addEventListener('keyup', (e) => {
-    if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
-});
+            ctx.fillStyle = player2.color;
+            ctx.fillRect(player2.x, player2.y, player2.width, player2.height);
 
-// Fonction pour tirer dans la direction que regarde le joueur
-function shoot(player) {
-    if (player.canShoot) {
-        let bulletDx = 0;
-        let bulletDy = 0;
+            // Gérer les balles
+            bullets.forEach((bullet, index) => {
+                bullet.x += bullet.dx;
+                bullet.y += bullet.dy;
 
-        // Déterminer la direction du tir en fonction de "facing"
-        if (player.facing === 'right') bulletDx = bulletSpeed;
-        else if (player.facing === 'left') bulletDx = -bulletSpeed;
-        else if (player.facing === 'up') bulletDy = -bulletSpeed;
-        else if (player.facing === 'down') bulletDy = bulletSpeed;
-        else if (player.facing === 'up-right') {
-            bulletDx = bulletSpeed / Math.sqrt(2);
-            bulletDy = -bulletSpeed / Math.sqrt(2);
-        } else if (player.facing === 'up-left') {
-            bulletDx = -bulletSpeed / Math.sqrt(2);
-            bulletDy = -bulletSpeed / Math.sqrt(2);
-        } else if (player.facing === 'down-right') {
-            bulletDx = bulletSpeed / Math.sqrt(2);
-            bulletDy = bulletSpeed / Math.sqrt(2);
-        } else if (player.facing === 'down-left') {
-            bulletDx = -bulletSpeed / Math.sqrt(2);
-            bulletDy = bulletSpeed / Math.sqrt(2);
+                // Détection de collision
+                if (bullet.x < player1.x + player1.width && bullet.x + 10 > player1.x && bullet.y < player1.y + player1.height && bullet.y + 10 > player1.y) {
+                    player1.health -= 10;
+                    bullets.splice(index, 1); // Supprimer la balle après collision
+                }
+
+                if (bullet.x < player2.x + player2.width && bullet.x + 10 > player2.x && bullet.y < player2.y + player2.height && bullet.y + 10 > player2.y) {
+                    player2.health -= 10;
+                    bullets.splice(index, 1); // Supprimer la balle après collision
+                }
+
+                // Effacer les balles hors de l'écran
+                if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
+                    bullets.splice(index, 1);
+                }
+
+                // Dessiner la balle
+                ctx.fillStyle = 'black';
+                ctx.fillRect(bullet.x, bullet.y, 10, 10);
+            });
+
+            // Affichage de la santé
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText(`Player 1 Health: ${player2.health}`, 20, 20);
+            ctx.fillText(`Player 2 Health: ${player1.health}`, 600, 20);
+
+            // Vérifier la fin de la partie
+            if (player1.health <= 0 || player2.health <= 0) {
+                const winner = player1.health > 0 ? 'Player 1' : 'Player 2';
+                alert(`${winner} wins!`);
+                resetGame();
+            }
+
+            // Appel à la prochaine frame
+            requestAnimationFrame(gameLoop);
         }
 
-        const bullet = {
-            x: player.x + player.width / 2,
-            y: player.y + player.height / 2,
-            dx: bulletDx,
-            dy: bulletDy
-        };
+        // Contrôles du joueur 1
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+        });
 
-        bullets.push(bullet);
-        player.canShoot = false;
-        setTimeout(() => (player.canShoot = true), shootCooldown);
-    }
-}
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
 
-// Mise à jour des joueurs
-function updatePlayer(player, upKey, downKey, leftKey, rightKey, shootKey) {
-    player.dx = 0;
-    player.dy = 0;
+        function movePlayer1() {
+            if (keys['ArrowUp']) player1.dy = -2;
+            else if (keys['ArrowDown']) player1.dy = 2;
+            else player1.dy = 0;
 
-    if (keys[upKey]) {
-        player.dy = -playerSpeed;
-        player.facing = 'up';
-    }
-    if (keys[downKey]) {
-        player.dy = playerSpeed;
-        player.facing = 'down';
-    }
-    if (keys[leftKey]) {
-        player.dx = -playerSpeed;
-        player.facing = 'left';
-    }
-    if (keys[rightKey]) {
-        player.dx = playerSpeed;
-        player.facing = 'right';
-    }
+            if (keys['ArrowLeft']) {
+                player1.dx = -2;
+                player1.facingRight = false;
+            } else if (keys['ArrowRight']) {
+                player1.dx = 2;
+                player1.facingRight = true;
+            } else {
+                player1.dx = 0;
+            }
 
-    // Combinaisons pour les diagonales
-    if (keys[upKey] && keys[rightKey]) player.facing = 'up-right';
-    if (keys[upKey] && keys[leftKey]) player.facing = 'up-left';
-    if (keys[downKey] && keys[rightKey]) player.facing = 'down-right';
-    if (keys[downKey] && keys[leftKey]) player.facing = 'down-left';
-
-    if (keys[shootKey]) {
-        shoot(player);
-    }
-
-    player.x += player.dx;
-    player.y += player.dy;
-
-    // Empêcher les joueurs de sortir de l'écran
-    player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-    player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
-}
-
-// Dessiner les joueurs
-function drawPlayer(player, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-}
-
-// Dessiner les obstacles
-function drawObstacles() {
-    ctx.fillStyle = 'gray';
-    obstacles.forEach((obstacle) => {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    });
-}
-
-// Dessiner les projectiles
-function drawBullets() {
-    ctx.fillStyle = 'black';
-    bullets.forEach((bullet, index) => {
-        bullet.x += bullet.dx;
-        bullet.y += bullet.dy;
-
-        // Vérifier les collisions avec les obstacles
-        const hitObstacle = obstacles.some(
-            (obs) =>
-                bullet.x < obs.x + obs.width &&
-                bullet.x + 5 > obs.x &&
-                bullet.y < obs.y + obs.height &&
-                bullet.y + 5 > obs.y
-        );
-
-        // Supprimer les balles hors de l'écran ou en collision
-        if (
-            bullet.x < 0 ||
-            bullet.x > canvas.width ||
-            bullet.y < 0 ||
-            bullet.y > canvas.height ||
-            hitObstacle
-        ) {
-            bullets.splice(index, 1);
-        } else {
-            ctx.fillRect(bullet.x, bullet.y, 5, 5);
+            if (keys['0']) shoot(player1); // Tirer avec le joueur 1
         }
-    });
-}
 
-// Fonction principale du jeu
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Contrôles du joueur 2
+        function movePlayer2() {
+            if (keys['z']) player2.dy = -2;
+            else if (keys['s']) player2.dy = 2;
+            else player2.dy = 0;
 
-    // Dessiner les obstacles
-    drawObstacles();
+            if (keys['q']) {
+                player2.dx = -2;
+                player2.facingRight = false;
+            } else if (keys['d']) {
+                player2.dx = 2;
+                player2.facingRight = true;
+            } else {
+                player2.dx = 0;
+            }
 
-    // Mettre à jour les joueurs
-    updatePlayer(player1, 'w', 's', 'a', 'd', ' ');
-    updatePlayer(player2, 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter');
+            if (keys[' ']) shoot(player2); // Tirer avec le joueur 2
+        }
 
-    // Dessiner les joueurs
-    drawPlayer(player1, 'red');
-    drawPlayer(player2, 'blue');
+        // Tirer une balle
+        function shoot(player) {
+            if (player.canShoot) {
+                // Créer la balle devant chaque joueur, en fonction de la direction dans laquelle il regarde
+                const bullet = {
+                    x: player.facingRight ? player.x + player.width : player.x - 10, // La direction de la balle dépend de la direction du joueur
+                    y: player.y + player.height / 2 - 5, // Centrer la balle
+                    dx: player.facingRight ? bulletSpeed : -bulletSpeed,
+                    dy: 0
+                };
+                bullets.push(bullet);
 
-    // Dessiner les projectiles
-    drawBullets();
+                // Empêcher un nouveau tir avant la fin du cooldown
+                player.canShoot = false;
+                setTimeout(() => {
+                    player.canShoot = true;
+                }, shootCooldown); // cooldown en millisecondes
+            }
+        }
 
-    requestAnimationFrame(gameLoop);
-}
+        // Réinitialiser la partie
+        function resetGame() {
+            player1.x = 720;
+            player1.y = 300;
+            player1.health = 100;
+            player1.canShoot = true;
+            player1.facingRight = false;
 
-// Réinitialiser le jeu
-function resetGame() {
-    player1.x = 50;
-    player1.y = 300;
-    player1.dx = 0;
-    player1.dy = 0;
-    player1.canShoot = true;
-    player1.facing = 'right';
+            player2.x = 50;
+            player2.y = 300;
+            player2.health = 100;
+            player2.canShoot = true;
+            player2.facingRight = true;
 
-    player2.x = 720;
-    player2.y = 300;
-    player2.dx = 0;
-    player2.dy = 0;
-    player2.canShoot = true;
-    player2.facing = 'left';
+            bullets.length = 0;
+        }
 
-    bullets.length = 0;
+        // Démarrer le jeu
+        function startGame() {
+            gameLoop();
+            setInterval(() => {
+                movePlayer1();
+                movePlayer2();
+            }, 1000 / 60);
+        }
 
-    for (let key in keys) {
-        keys[key] = false;
-    }
-}
-
-// Lancer le jeu
-resetGame();
-gameLoop();
-
+        // Lancer le jeu
+        startGame();
     </script>
 </body>
 </html>
