@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Virtuel</title>
+    <style>
+        /* Styles pour le piano */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        #piano-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .key {
+            width: 60px;
+            height: 200px;
+            margin: 0 5px;
+            background-color: white;
+            border: 1px solid black;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            user-select: none;
+        }
+
+        .key:active {
+            background-color: lightgray;
+        }
+
+        #config-container {
+            margin: 20px auto;
+            width: 80%;
+            max-width: 500px;
+            text-align: left;
+        }
+
+        .config {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        label {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Conteneur du piano -->
+    <div id="piano-container">
+        <div class="key" id="key1">A</div>
+        <div class="key" id="key2">A#</div>
+        <div class="key" id="key3">B</div>
+        <div class="key" id="key4">B#</div>
+        <div class="key" id="key5">C</div>
+        <div class="key" id="key6">C#</div>
+    </div>
+
+    <!-- Conteneur pour configurer les touches -->
+    <div id="config-container">
+        <h2>Configurer les touches</h2>
+        <div class="config">
+            <label for="note1">Touche 1:</label>
+            <input type="text" id="note1" value="A">
+        </div>
+        <div class="config">
+            <label for="note2">Touche 2:</label>
+            <input type="text" id="note2" value="A#">
+        </div>
+        <div class="config">
+            <label for="note3">Touche 3:</label>
+            <input type="text" id="note3" value="B">
+        </div>
+        <div class="config">
+            <label for="note4">Touche 4:</label>
+            <input type="text" id="note4" value="B#">
+        </div>
+        <div class="config">
+            <label for="note5">Touche 5:</label>
+            <input type="text" id="note5" value="C">
+        </div>
+        <div class="config">
+            <label for="note6">Touche 6:</label>
+            <input type="text" id="note6" value="C#">
+        </div>
+        <button id="apply-config">Appliquer la configuration</button>
+    </div>
+
+    <script>
+        // Initialisation des touches
+        const keys = document.querySelectorAll('.key');
+        const inputs = document.querySelectorAll('input');
+
+        // Fonction pour jouer un son simulé
+        function playSound(note) {
+            alert(`Vous avez joué: ${note}`);
+        }
+
+        // Ajouter des événements aux touches
+        keys.forEach((key, index) => {
+            key.addEventListener('click', () => {
+                playSound(key.textContent);
+            });
+        });
+
+        // Appliquer la configuration des notes
+        document.getElementById('apply-config').addEventListener('click', () => {
+            inputs.forEach((input, index) => {
+                keys[index].textContent = input.value;
+            });
+        });
+    </script>
+</body>
+</html>
