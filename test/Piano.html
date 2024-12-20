@@ -127,15 +127,26 @@
         const keys = document.querySelectorAll('.key');
         const inputs = document.querySelectorAll('input');
 
-        // Fonction pour jouer un son simulé
-        function playSound(note) {
-            alert(`Vous avez joué: ${note}`);
+        // Création d'un contexte audio pour jouer des sons
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Fonction pour jouer un son simple
+        function playSound(frequency) {
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2); // Le son dure 0.2 secondes
         }
 
         // Ajouter des événements aux touches
         keys.forEach((key, index) => {
             key.addEventListener('click', () => {
-                playSound(key.textContent);
+                const note = key.textContent;
+                const baseFrequency = 440; // Fréquence de référence (A4)
+                const frequency = baseFrequency * Math.pow(2, (index - 3) / 12); // Calcul des fréquences
+                playSound(frequency);
             });
         });
 
