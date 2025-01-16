@@ -6,5 +6,5 @@
    -copy the hexadecimal with a click on the color<br>
 -add store color and template<br>
 
-https://htmlpreview.github.io/?
+https://htmlpreview.github.io/? <br>
 https://flobotron.itch.io/paddle-force
