@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo List Gamifiée</title>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #333;
+        }
+        .mission {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #444;
+            border-radius: 5px;
+        }
+        .mission.completed {
+            background-color: #666;
+        }
+        .folder {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #555;
+            border-radius: 5px;
+        }
+        .folder .missions {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>Points: <span id="points">0</span></div>
+        <button id="addMission">Ajouter une Mission</button>
+    </div>
+    <div id="missionsList"></div>
+
+    <script>
+        let points = 0;
+        const missions = [];
+        const missionsList = document.getElementById('missionsList');
+
+        function addMission(name, pointsEarned) {
+            const mission = { name, pointsEarned, completed: false };
+            missions.push(mission);
+            renderMissions();
+        }
+
+        function completeMission(index) {
+            if (!missions[index].completed) {
+                points += missions[index].pointsEarned;
+                missions[index].completed = true;
+                document.getElementById('points').textContent = points;
+                renderMissions();
+            }
+        }
+
+        function renderMissions() {
+            missionsList.innerHTML = '';
+            missions.forEach((mission, index) => {
+                const missionElement = document.createElement('div');
+                missionElement.className = `mission ${mission.completed ? 'completed' : ''}`;
+                missionElement.innerHTML = `
+                    <span>${mission.name}</span>
+                    <button onclick="completeMission(${index})" ${mission.completed ? 'disabled' : ''}>Terminé</button>
+                `;
+                missionsList.appendChild(missionElement);
+            });
+        }
+
+        document.getElementById('addMission').addEventListener('click', () => {
+            const name = prompt('Nom de la mission:');
+            const pointsEarned = parseInt(prompt('Points gagnés:'));
+            if (name && pointsEarned) {
+                addMission(name, pointsEarned);
+            }
+        });
+
+        // Reset à 4h du matin
+        function resetMissions() {
+            const now = new Date();
+            const resetTime = new Date(now);
+            resetTime.setHours(4, 0, 0, 0);
+            if (now >= resetTime) {
+                resetTime.setDate(resetTime.getDate() + 1);
+            }
+            const timeUntilReset = resetTime - now;
+            setTimeout(() => {
+                missions.forEach(mission => mission.completed = false);
+                renderMissions();
+                resetMissions();
+            }, timeUntilReset);
+        }
+
+        resetMissions();
+    </script>
+</body>
+</html>
