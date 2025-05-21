@@ -6,6 +6,9 @@
    -copy the hexadecimal with a click on the color<br>
 -add store color and template<br>
 
+pyrate: 
+ePRnShR
+
 https://htmlpreview.github.io/? <br>
 https://flobotron.itch.io/paddle-force <br>
 https://weentermakesgames.itch.io/monster-battlegrounds <br>
