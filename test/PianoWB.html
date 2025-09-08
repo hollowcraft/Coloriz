@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devine la note de piano</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        #piano {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .piano-key {
+            display: inline-block;
+            border: 1px solid #000;
+            text-align: center;
+            cursor: pointer;
+            background-color: white;
+        }
+        .white-key {
+            width: 50px;
+            height: 150px;
+            line-height: 150px;
+        }
+        .black-key {
+            width: 30px;
+            height: 100px;
+            background-color: black;
+            position: absolute;
+            top: 0;
+            margin-left: -15px;
+            line-height: 100px;
+            color: white;
+            z-index: 1;
+        }
+        .piano-key.correct {
+            background-color: green;
+        }
+        .piano-key.incorrect {
+            background-color: red;
+        }
+        #replay-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #volume-control {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Devine la note de piano</h1>
+    <p>Écoute la note et clique sur la touche correspondante.</p>
+    <div id="piano">
+        <!-- Touches blanches -->
+        <div class="piano-key white-key" data-note="C">C</div>
+        <div class="piano-key white-key" data-note="D">D</div>
+        <div class="piano-key white-key" data-note="E">E</div>
+        <div class="piano-key white-key" data-note="F">F</div>
+        <div class="piano-key white-key" data-note="G">G</div>
+        <div class="piano-key white-key" data-note="A">A</div>
+        <div class="piano-key white-key" data-note="B">B</div>
+
+        <!-- Touches noires -->
+        <div class="piano-key black-key" data-note="C#" style="left: 50px;">C#</div>
+        <div class="piano-key black-key" data-note="D#" style="left: 115px;">D#</div>
+        <div class="piano-key black-key" data-note="F#" style="left: 220px;">F#</div>
+        <div class="piano-key black-key" data-note="G#" style="left: 280px;">G#</div>
+        <div class="piano-key black-key" data-note="A#" style="left: 340px;">A#</div>
+    </div>
+    <button id="replay-button">Réécouter la note</button>
+    <div id="volume-control">
+        <label for="volume">Volume :</label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+    </div>
+    <p id="result"></p>
+
+    <script>
+        const pianoKeys = document.querySelectorAll('.piano-key');
+        const resultText = document.getElementById('result');
+        const replayButton = document.getElementById('replay-button');
+        const volumeControl = document.getElementById('volume');
+        let currentNote = '';
+
+        const notes = {
+            'C': 261.63,
+            'C#': 277.18,
+            'D': 293.66,
+            'D#': 311.13,
+            'E': 329.63,
+            'F': 349.23,
+            'F#': 369.99,
+            'G': 392.00,
+            'G#': 415.30,
+            'A': 440.00,
+            'A#': 466.16,
+            'B': 493.88
+        };
+
+        let audioContext;
+        let gainNode;
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.value = volumeControl.value; // Initialise le volume
+        }
+
+        function playNote(note) {
+            if (!audioContext) {
+                initAudio();
+            }
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(notes[note], audioContext.currentTime);
+            oscillator.connect(gainNode);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 1); // Joue la note pendant 1 seconde
+        }
+
+        function getRandomNote() {
+            const noteKeys = Object.keys(notes);
+            return noteKeys[Math.floor(Math.random() * noteKeys.length)];
+        }
+
+        function resetKeys() {
+            pianoKeys.forEach(key => {
+                key.classList.remove('correct', 'incorrect');
+            });
+        }
+
+        function startGame() {
+            resetKeys();
+            currentNote = getRandomNote();
+            playNote(currentNote);
+            resultText.textContent = '';
+        }
+
+        pianoKeys.forEach(key => {
+            key.addEventListener('click', () => {
+                if (key.dataset.note === currentNote) {
+                    key.classList.add('correct');
+                    resultText.textContent = 'Correct !';
+                    setTimeout(startGame, 1000); // Recommence le jeu après 1 seconde
+                } else {
+                    key.classList.add('incorrect');
+                    const correctKey = document.querySelector(`[data-note="${currentNote}"]`);
+                    correctKey.classList.add('correct');
+                    resultText.textContent = 'Incorrect. La bonne note était ' + currentNote;
+                    setTimeout(startGame, 1000); // Recommence le jeu après 1 seconde
+                }
+            });
+        });
+
+        replayButton.addEventListener('click', () => {
+            if (currentNote) {
+                playNote(currentNote);
+            }
+        });
+
+        volumeControl.addEventListener('input', () => {
+            if (gainNode) {
+                gainNode.gain.value = volumeControl.value; // Met à jour le volume
+            }
+        });
+
+        startGame(); // Commence le jeu au chargement de la page
+    </script>
+</body>
+</html>

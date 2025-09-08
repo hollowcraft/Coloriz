@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devine la note de piano</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        #piano {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .piano-key {
+            display: inline-block;
+            width: 50px;
+            height: 150px;
+            margin: 5px;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 150px;
+            cursor: pointer;
+            background-color: white;
+        }
+        .piano-key.correct {
+            background-color: green;
+        }
+        .piano-key.incorrect {
+            background-color: red;
+        }
+        #replay-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #volume-control {
+            margin-top: 20px;
+        }
+        #midi-status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #la-key {
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            margin: 10px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 70px;
+            cursor: pointer;
+            background-color: #ffcc00;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Devine la note de piano</h1>
+    <p>Écoute la note et clique sur la touche correspondante ou jouez-la sur votre piano MIDI.</p>
+    <div id="piano">
+        <!-- Touches blanches -->
+        <div class="piano-key" data-note="C">C</div>
+        <div class="piano-key" data-note="D">D</div>
+        <div class="piano-key" data-note="E">E</div>
+        <div class="piano-key" data-note="F">F</div>
+        <div class="piano-key" data-note="G">G</div>
+        <div class="piano-key" data-note="A">A</div>
+        <div class="piano-key" data-note="B">B</div>
+    </div>
+    <div id="la-key">La (A)</div>
+    <button id="replay-button">Réécouter la note</button>
+    <div id="volume-control">
+        <label for="volume">Volume :</label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+    </div>
+    <p id="midi-status">Connexion MIDI : Non connecté</p>
+    <p id="result"></p>
+
+    <script>
+        const pianoKeys = document.querySelectorAll('.piano-key');
+        const resultText = document.getElementById('result');
+        const replayButton = document.getElementById('replay-button');
+        const volumeControl = document.getElementById('volume');
+        const midiStatus = document.getElementById('midi-status');
+        const laKey = document.getElementById('la-key');
+        let currentNote = '';
+
+        const notes = {
+            'C': 261.63,
+            'D': 293.66,
+            'E': 329.63,
+            'F': 349.23,
+            'G': 392.00,
+            'A': 440.00,
+            'B': 493.88
+        };
+
+        // Mappage des notes MIDI aux noms de notes
+        const midiNoteToName = {
+            60: 'C',
+            62: 'D',
+            64: 'E',
+            65: 'F',
+            67: 'G',
+            69: 'A',
+            71: 'B'
+        };
+
+        let audioContext;
+        let gainNode;
+
+        // Variable pour suivre la dernière note jouée
+        let lastProcessedNote = null;
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.value = volumeControl.value; // Initialise le volume
+        }
+
+        function playNote(note) {
+            if (!audioContext) {
+                initAudio();
+            }
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(notes[note], audioContext.currentTime);
+            oscillator.connect(gainNode);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 1); // Joue la note pendant 1 seconde
+        }
+
+        function getRandomNote() {
+            const noteKeys = Object.keys(notes);
+            return noteKeys[Math.floor(Math.random() * noteKeys.length)];
+        }
+
+        function resetKeys() {
+            pianoKeys.forEach(key => {
+                key.classList.remove('correct', 'incorrect');
+            });
+        }
+
+        function startGame() {
+            resetKeys();
+            currentNote = getRandomNote();
+            playNote(currentNote);
+            resultText.textContent = '';
+        }
+
+        // Gestion des clics sur les touches du piano
+        pianoKeys.forEach(key => {
+            key.addEventListener('click', () => {
+                checkNote(key.dataset.note);
+            });
+        });
+
+        // Vérifie si la note jouée est correcte
+        function checkNote(note) {
+            if (note === currentNote) {
+                const correctKey = document.querySelector(`[data-note="${note}"]`);
+                correctKey.classList.add('correct');
+                resultText.textContent = 'Correct !';
+                setTimeout(startGame, 1000); // Recommence le jeu après 1 seconde
+            } else {
+                const correctKey = document.querySelector(`[data-note="${currentNote}"]`);
+                correctKey.classList.add('correct');
+                const incorrectKey = document.querySelector(`[data-note="${note}"]`);
+                if (incorrectKey) {
+                    incorrectKey.classList.add('incorrect');
+                }
+                resultText.textContent = 'Incorrect. La bonne note était ' + currentNote;
+                setTimeout(startGame, 1000); // Recommence le jeu après 1 seconde
+            }
+        }
+
+        // Réécouter la note
+        replayButton.addEventListener('click', () => {
+            if (currentNote) {
+                playNote(currentNote);
+            }
+        });
+
+        // Contrôle du volume
+        volumeControl.addEventListener('input', () => {
+            if (gainNode) {
+                gainNode.gain.value = volumeControl.value; // Met à jour le volume
+            }
+        });
+
+        // Jouer la note La (A) lorsque la touche spéciale est cliquée
+        laKey.addEventListener('click', () => {
+            playNote('A');
+        });
+
+        // Initialisation MIDI
+        function initMIDI() {
+            if (navigator.requestMIDIAccess) {
+                navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+            } else {
+                midiStatus.textContent = "Votre navigateur ne supporte pas l'API Web MIDI.";
+            }
+        }
+
+        function onMIDISuccess(midiAccess) {
+            midiStatus.textContent = "Connexion MIDI : Connecté";
+            for (const input of midiAccess.inputs.values()) {
+                input.onmidimessage = onMIDIMessage;
+            }
+        }
+
+        function onMIDIFailure() {
+            midiStatus.textContent = "Connexion MIDI : Échec";
+        }
+
+        // Gestion des messages MIDI
+        function onMIDIMessage(message) {
+            const [command, note] = message.data;
+            if (command === 144) { // Note On (touche enfoncée)
+                const noteName = midiNoteToName[note];
+                if (noteName && noteName !== lastProcessedNote) {
+                    lastProcessedNote = noteName; // Mettre à jour la dernière note traitée
+                    checkNote(noteName);
+                }
+            } else if (command === 128) { // Note Off (touche relâchée)
+                lastProcessedNote = null; // Réinitialiser la dernière note traitée
+            }
+        }
+
+        // Démarrer le jeu et MIDI
+        startGame();
+        initMIDI();
+    </script>
+</body>
+</html>

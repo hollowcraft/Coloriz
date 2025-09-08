@@ -1,0 +1,55 @@
+import { useState, useEffect } from "react";
+import { Piano, KeyboardShortcuts } from "react-piano";
+import "react-piano/dist/styles.css";
+
+const MidiTrainer = () => {
+  const [midiAccess, setMidiAccess] = useState(null);
+  const [activeNotes, setActiveNotes] = useState([]);
+  const [mode, setMode] = useState("recognition");
+
+  useEffect(() => {
+    if (navigator.requestMIDIAccess) {
+      navigator.requestMIDIAccess().then((midi) => {
+        setMidiAccess(midi);
+        for (let input of midi.inputs.values()) {
+          input.onmidimessage = handleMidiMessage;
+        }
+      });
+    }
+  }, []);
+
+  const handleMidiMessage = (message) => {
+    const [command, note, velocity] = message.data;
+    if (command === 144 && velocity > 0) {
+      setActiveNotes((prev) => [...prev, note]);
+    } else if (command === 128 || velocity === 0) {
+      setActiveNotes((prev) => prev.filter((n) => n !== note));
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Apprentissage du Piano</h1>
+      <div className="mb-4">
+        <button className="mr-2 p-2 bg-blue-500 text-white" onClick={() => setMode("recognition")}>Reconnaissance de Note</button>
+        <button className="mr-2 p-2 bg-green-500 text-white" onClick={() => setMode("sequence")}>Séquence de Notes</button>
+        <button className="p-2 bg-purple-500 text-white" onClick={() => setMode("chords")}>Accords</button>
+      </div>
+      <Piano
+        noteRange={{ first: 48, last: 72 }}
+        playNote={() => {}}
+        stopNote={() => {}}
+        activeNotes={activeNotes}
+        keyboardShortcuts={KeyboardShortcuts.create({
+          firstNote: 48,
+          lastNote: 72,
+          keyboardConfig: KeyboardShortcuts.HOME_ROW,
+        })}
+      />
+      <p className="mt-2">Mode actif : {mode}</p>
+      <p className="mt-2">Joue une note sur ton clavier MIDI ou utilise le clavier visuel.</p>
+    </div>
+  );
+};
+
+export default MidiTrainer;

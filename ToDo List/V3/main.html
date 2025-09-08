@@ -9,6 +9,8 @@
             background-color: #1e1e1e;
             color: #ffffff;
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
         .header {
             display: flex;
@@ -16,25 +18,39 @@
             padding: 10px;
             background-color: #333;
         }
-        .mission {
+        .mission, .folder {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 10px;
             margin: 5px 0;
             background-color: #444;
             border-radius: 5px;
+            cursor: grab;
         }
         .mission.completed {
             background-color: #666;
         }
         .folder {
-            margin: 10px 0;
-            padding: 10px;
             background-color: #555;
-            border-radius: 5px;
         }
         .folder .missions {
             margin-top: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        .dragging {
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -46,38 +62,167 @@
     <div id="missionsList"></div>
 
     <script>
+        // Variables globales
         let points = 0;
-        const missions = [];
-        const missionsList = document.getElementById('missionsList');
+        let missions = [];
+        let folders = [];
+        let draggedItem = null;
 
-        function addMission(name, pointsEarned) {
-            const mission = { name, pointsEarned, completed: false };
-            missions.push(mission);
+        // Éléments du DOM
+        const missionsList = document.getElementById('missionsList');
+        const pointsDisplay = document.getElementById('points');
+
+        // Charger les données depuis le localStorage
+        function loadFromLocalStorage() {
+            const savedPoints = localStorage.getItem('points');
+            const savedMissions = localStorage.getItem('missions');
+            const savedFolders = localStorage.getItem('folders');
+
+            if (savedPoints) {
+                points = parseInt(savedPoints, 10);
+                pointsDisplay.textContent = points;
+            }
+
+            if (savedMissions) {
+                missions = JSON.parse(savedMissions);
+            }
+
+            if (savedFolders) {
+                folders = JSON.parse(savedFolders);
+            }
+
             renderMissions();
         }
 
-        function completeMission(index) {
-            if (!missions[index].completed) {
-                points += missions[index].pointsEarned;
-                missions[index].completed = true;
-                document.getElementById('points').textContent = points;
+        // Sauvegarder les données dans le localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('points', points);
+            localStorage.setItem('missions', JSON.stringify(missions));
+            localStorage.setItem('folders', JSON.stringify(folders));
+        }
+
+        // Ajouter une mission
+        function addMission(name, pointsEarned) {
+            const mission = { id: Date.now(), name, pointsEarned, completed: false };
+            missions.push(mission);
+            saveToLocalStorage();
+            renderMissions();
+        }
+
+        // Terminer une mission
+        function completeMission(mission) {
+            if (!mission.completed) {
+                points += mission.pointsEarned;
+                mission.completed = true;
+                pointsDisplay.textContent = points;
+                saveToLocalStorage();
                 renderMissions();
             }
         }
 
+        // Créer un dossier
+        function createFolder(mission1, mission2) {
+            const folder = {
+                id: Date.now(),
+                missions: [mission1, mission2],
+                completed: false,
+            };
+            folders.push(folder);
+            missions = missions.filter(m => m.id !== mission1.id && m.id !== mission2.id);
+            saveToLocalStorage();
+            renderMissions();
+        }
+
+        // Ajouter une mission à un dossier
+        function addMissionToFolder(mission, folder) {
+            folder.missions.push(mission);
+            missions = missions.filter(m => m.id !== mission.id);
+            saveToLocalStorage();
+            renderMissions();
+        }
+
+        // Afficher les missions et dossiers
         function renderMissions() {
             missionsList.innerHTML = '';
-            missions.forEach((mission, index) => {
+            missions.forEach(mission => renderMission(mission));
+            folders.forEach(folder => renderFolder(folder));
+        }
+
+        // Afficher une mission
+        function renderMission(mission) {
+            const missionElement = document.createElement('div');
+            missionElement.className = `mission ${mission.completed ? 'completed' : ''}`;
+            missionElement.draggable = true;
+            missionElement.dataset.id = mission.id;
+            missionElement.innerHTML = `
+                <span>${mission.name} (${mission.pointsEarned} points)</span>
+                <button onclick="completeMission(${JSON.stringify(mission)})" ${mission.completed ? 'disabled' : ''}>Terminé</button>
+            `;
+            missionElement.addEventListener('dragstart', handleDragStart);
+            missionElement.addEventListener('dragover', handleDragOver);
+            missionElement.addEventListener('drop', handleDrop);
+            missionsList.appendChild(missionElement);
+        }
+
+        // Afficher un dossier
+        function renderFolder(folder) {
+            const folderElement = document.createElement('div');
+            folderElement.className = 'folder';
+            folderElement.dataset.id = folder.id;
+            folderElement.innerHTML = `<strong>Dossier</strong>`;
+            const missionsContainer = document.createElement('div');
+            missionsContainer.className = 'missions';
+            folder.missions.forEach(mission => {
                 const missionElement = document.createElement('div');
                 missionElement.className = `mission ${mission.completed ? 'completed' : ''}`;
                 missionElement.innerHTML = `
-                    <span>${mission.name}</span>
-                    <button onclick="completeMission(${index})" ${mission.completed ? 'disabled' : ''}>Terminé</button>
+                    <span>${mission.name} (${mission.pointsEarned} points)</span>
+                    <button onclick="completeMission(${JSON.stringify(mission)})" ${mission.completed ? 'disabled' : ''}>Terminé</button>
                 `;
-                missionsList.appendChild(missionElement);
+                missionsContainer.appendChild(missionElement);
             });
+            folderElement.appendChild(missionsContainer);
+            folderElement.addEventListener('dragover', handleDragOver);
+            folderElement.addEventListener('drop', handleDrop);
+            missionsList.appendChild(folderElement);
         }
 
+        // Gestion du drag-and-drop
+        function handleDragStart(e) {
+            draggedItem = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const target = e.target.closest('.mission, .folder');
+            if (target && draggedItem) {
+                const draggedMissionId = parseInt(draggedItem.dataset.id, 10);
+                const draggedMission = missions.find(m => m.id === draggedMissionId);
+
+                if (target.classList.contains('folder')) {
+                    // Ajouter la mission au dossier
+                    const folderId = parseInt(target.dataset.id, 10);
+                    const folder = folders.find(f => f.id === folderId);
+                    addMissionToFolder(draggedMission, folder);
+                } else if (target.classList.contains('mission')) {
+                    // Créer un dossier avec les deux missions
+                    const targetMissionId = parseInt(target.dataset.id, 10);
+                    const targetMission = missions.find(m => m.id === targetMissionId);
+                    createFolder(draggedMission, targetMission);
+                }
+            }
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        // Gestion de l'ajout de mission
         document.getElementById('addMission').addEventListener('click', () => {
             const name = prompt('Nom de la mission:');
             const pointsEarned = parseInt(prompt('Points gagnés:'));
@@ -86,23 +231,8 @@
             }
         });
 
-        // Reset à 4h du matin
-        function resetMissions() {
-            const now = new Date();
-            const resetTime = new Date(now);
-            resetTime.setHours(4, 0, 0, 0);
-            if (now >= resetTime) {
-                resetTime.setDate(resetTime.getDate() + 1);
-            }
-            const timeUntilReset = resetTime - now;
-            setTimeout(() => {
-                missions.forEach(mission => mission.completed = false);
-                renderMissions();
-                resetMissions();
-            }, timeUntilReset);
-        }
-
-        resetMissions();
+        // Charger les données au démarrage
+        loadFromLocalStorage();
     </script>
 </body>
 </html>
