@@ -1,0 +1,4 @@
+Animation = {}
+
+function AnimationDraw()
+end
