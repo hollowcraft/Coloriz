@@ -193,12 +193,14 @@
     @keyFrames moveLeft {
 	    0% {
             transform: translateX(0%);
+		    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.1);
         }
         75% {
             transform: translateX(-1300%);
         }
 	    100% {
             transform: translateX(-1250%);
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0), 0 6px 20px rgba(0, 0, 0, 0);
         }
     }
     .move-right1 {
@@ -851,4 +853,5 @@ function rgbToHsb(r, g, b) {
 
 </body>
 </html>
+
 
